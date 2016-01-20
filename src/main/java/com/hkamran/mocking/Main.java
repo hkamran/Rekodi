@@ -41,8 +41,9 @@ public class Main {
 			public void event(Object... objs) {
 				Object obj1 = objs[0];
 				Object obj2 = objs[1];
+				Object obj3 = objs[2];
 				if (obj1 instanceof Request && obj2 instanceof Response) {
-					window.updateConsole((Request) obj1, (Response) obj2);
+					window.updateConsole((Request) obj1, (Response) obj2, (Long) obj3);
 				} else if (obj1 instanceof String) {
 					window.updateConsole((String) obj1);
 				}

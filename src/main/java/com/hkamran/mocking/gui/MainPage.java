@@ -4,26 +4,18 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
-import javax.swing.SwingUtilities;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-
 import org.apache.log4j.Logger;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.RGB;
@@ -32,9 +24,7 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
@@ -45,10 +35,6 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.wb.swt.SWTResourceManager;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
 
 import com.hkamran.mocking.Debugger;
 import com.hkamran.mocking.FilterManager;
@@ -56,9 +42,6 @@ import com.hkamran.mocking.FilterManager.State;
 import com.hkamran.mocking.Request;
 import com.hkamran.mocking.Response;
 import com.hkamran.mocking.Tape;
-
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 
 public class MainPage {
 
@@ -247,10 +230,6 @@ public class MainPage {
 		ToolBar contentToolBar = new ToolBar(contentFolder, SWT.FLAT);
 		contentToolBar.setBackground(SWTResourceManager.getColor(new RGB(238, 242, 250)));
 
-		ToolItem formatItem = new ToolItem(contentToolBar, SWT.NONE);
-		formatItem.setToolTipText("Format");
-		formatItem.setImage(SWTResourceManager.getImage(MainPage.class, "/icons/format.png"));
-
 		contentFolder.setTopRight(contentToolBar, SWT.RIGHT);
 
 		contentText = new Text(contentFolder, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
@@ -279,6 +258,8 @@ public class MainPage {
 		tbtmLog.setImage(SWTResourceManager.getImage(MainPage.class, "/icons/icon_console.png"));
 		tbtmLog.setText("Log");
 
+		
+		
 		logTree = new Tree(logFolderTab, SWT.BORDER | SWT.FULL_SELECTION);
 		logTree.addMouseListener(new MouseAdapter() {
 			@Override
@@ -308,8 +289,13 @@ public class MainPage {
 
 		TreeColumn trclmnValue = new TreeColumn(logTree, SWT.NONE);
 		trclmnValue.setText("Value");
-		trclmnValue.setWidth(300);
+		trclmnValue.setWidth(193);
 
+		TreeColumn trclmnTime = new TreeColumn(logTree, SWT.NONE);
+		trclmnTime.setWidth(100);
+		trclmnTime.setText("Time");
+		mainForm.setWeights(new int[] { 296, 217 });
+		
 		Menu menu = new Menu(shell, SWT.BAR);
 		shell.setMenuBar(menu);
 
@@ -423,6 +409,7 @@ public class MainPage {
 				filter.setTape(tape);
 				updateTree(tape);
 				contentText.setText("");
+				headerText.setText("");
 			}
 		});
 
@@ -440,80 +427,6 @@ public class MainPage {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				logTree.removeAll();
-			}
-		});
-
-		formatItem.addSelectionListener(new SelectionAdapter() {
-
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				Display.getDefault().asyncExec(new Runnable() {
-					public void run() {
-						String content = contentText.getText();
-
-						if (content.length() == 0) {
-							return;
-						}
-
-						if (isXML(content)) {
-							contentText.setText(prettifyXML(content));
-						} else if (isJSON(content)) {
-							JSONObject json = new JSONObject(content);
-							contentText.setText(json.toString(2));
-						} else {
-							log.error("Unable to format unknown content type");
-						}
-					}
-				});
-
-			}
-
-			private String prettifyXML(String content) throws TransformerFactoryConfigurationError {
-				try {
-
-					DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-					dbf.setNamespaceAware(false);
-					dbf.setValidating(false);
-					dbf.setFeature("http://xml.org/sax/features/namespaces", false);
-					dbf.setFeature("http://xml.org/sax/features/validation", false);
-					dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
-					dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-
-					DocumentBuilder db = dbf.newDocumentBuilder();
-					InputSource is = new InputSource(new StringReader(content));
-
-					final Document document = db.parse(is);
-					OutputFormat format = new OutputFormat(document);
-					format.setLineWidth(100);
-					format.setIndenting(true);
-					format.setIndent(3);
-
-					Writer out = new StringWriter();
-					XMLSerializer serializer = new XMLSerializer(out, format);
-					serializer.serialize(document);
-
-					return out.toString();
-				} catch (Exception e) {
-					log.error("Unable to format xml content");
-				}
-				return content;
-			}
-
-			private Boolean isXML(String content) {
-				if (content.startsWith("<")) {
-					return true;
-				}
-				return false;
-			}
-
-			private Boolean isJSON(String content) {
-				try {
-					new JSONObject(content);
-					return true;
-				} catch (JSONException e) {
-					log.error("Unable to format json content");
-				}
-				return false;
 			}
 		});
 
@@ -911,14 +824,14 @@ public class MainPage {
 		});
 	}
 
-	public void updateConsole(final Request req, final Response res) {
+	public void updateConsole(final Request req, final Response res, final Long l) {
 		Display.getDefault().syncExec(new Runnable() {
 			public void run() {
 				DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 				Calendar cal = Calendar.getInstance();
 
 				TreeItem incomingItem = new TreeItem(logTree, SWT.NONE);
-				incomingItem.setText(dateFormat.format(cal.getTime()) + " - Incoming " + req.hashCode());
+				incomingItem.setText(new String[] { dateFormat.format(cal.getTime()) + " - Incoming " + req.hashCode(), "", l.toString() + "ms" });
 
 				TreeItem requestItem = new TreeItem(incomingItem, SWT.NONE);
 				requestItem.setText("Request");

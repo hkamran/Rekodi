@@ -2,6 +2,7 @@ package com.hkamran.mocking;
 
 import java.net.InetSocketAddress;
 import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -9,6 +10,7 @@ import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.littleshoot.proxy.ChainedProxy;
 import org.littleshoot.proxy.ChainedProxyAdapter;
@@ -32,6 +34,7 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	public String redirectHost;
 	public Integer redirectPort;
 	public Boolean redirectState = false;	
+	public StopWatch watch;
 	
 	public static UIEvent event;
 
@@ -40,6 +43,7 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	}
 
 	public FilterManager() {
+		watch = new StopWatch();
 		debugger = new Debugger();
 		tape = new Tape();
 		recorder = new Recorder(tape);
@@ -78,6 +82,8 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 						req = new Request(httpFullObj);
 						
 						log.info("Request incoming: " + req.hashCode());
+						watch.reset();
+						watch.start();
 						
 						if (state == State.PROXY) {
 							//insert code for proxy management
@@ -102,7 +108,8 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 						DefaultFullHttpResponse httpFullObj = (DefaultFullHttpResponse) httpObject;
 						res = new Response(httpFullObj);
 
-						updateConsole(req, res);
+						watch.stop();
+						updateConsole(req, res, TimeUnit.MILLISECONDS.toMillis(watch.getTime()));
 						log.info("Response outgoing: " + res.hashCode() + " for " + req.hashCode());
 						
 						if (state == State.PROXY) {
@@ -125,9 +132,9 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	}
 	
 	
-	public void updateConsole(Request request, Response response) {
+	public void updateConsole(Request request, Response response, long l) {
 		if (event != null) {
-			event.event(request, response);
+			event.event(request, response, l);
 		}
 	}
 
@@ -151,7 +158,7 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 			response = debugger.analyze(request);
 		}			
 
-		updateConsole(request, response);
+		updateConsole(request, response, 0);
 	
 		if (response != null) {
 			log.info("Mocked Response outgoing: " + response.hashCode() + " for " + request.hashCode());

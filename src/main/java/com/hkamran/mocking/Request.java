@@ -2,7 +2,6 @@ package com.hkamran.mocking;
 
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpVersion;
@@ -12,6 +11,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.http.entity.ContentType;
+
+import com.hkamran.mocking.util.Formatter;
 
 public class Request {
 
@@ -49,7 +50,7 @@ public class Request {
 				e.printStackTrace();
 			}
 		}
-		return content.toString();
+		return Formatter.format(content.toString());
 	}
 
 	public int compareTo(Request d) {
@@ -189,7 +190,12 @@ public class Request {
 		header.add("Method", req.getMethod().toString());
 		header.add("URI", getURI());
 		header.add("Protocol", req.getProtocolVersion().text());
-		header.add("Content-Type", req.headers().get(CONTENT_TYPE));
+		
+		String contentType = req.headers().get(CONTENT_TYPE);
+		if (contentType != null) {
+			header.add("Content-Type", req.headers().get(CONTENT_TYPE));
+		}
+		
 		header.add("Match Type", this.getMatchType().toString());
 		header.add("Matched String", this.matchedString);
 		

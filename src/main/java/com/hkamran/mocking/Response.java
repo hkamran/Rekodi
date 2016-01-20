@@ -2,7 +2,6 @@ package com.hkamran.mocking;
 
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
@@ -14,6 +13,8 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.entity.ContentType;
 import org.json.JSONObject;
+
+import com.hkamran.mocking.util.Formatter;
 
 public class Response {
 	private static final String CONTENT_LENGTH = "Content-Length";
@@ -43,7 +44,7 @@ public class Response {
 				e.printStackTrace();
 			}
 		}
-		return content.toString();
+		return Formatter.format(content.toString());
 	}
 
 	public HttpObject getHttpObject() {
