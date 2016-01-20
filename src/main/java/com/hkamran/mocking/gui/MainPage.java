@@ -1,12 +1,25 @@
 package com.hkamran.mocking.gui;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
 import org.apache.log4j.Logger;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -19,7 +32,9 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
@@ -30,6 +45,10 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.wb.swt.SWTResourceManager;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 
 import com.hkamran.mocking.Debugger;
 import com.hkamran.mocking.FilterManager;
@@ -38,10 +57,13 @@ import com.hkamran.mocking.Request;
 import com.hkamran.mocking.Response;
 import com.hkamran.mocking.Tape;
 
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+
 public class MainPage {
-	
+
 	private final static Logger log = Logger.getLogger(MainPage.class);
-	
+
 	protected Shell shell;
 	private Display display;
 	private Text contentText;
@@ -52,6 +74,7 @@ public class MainPage {
 	private Boolean autoScroll = true;
 	private ToolItem redirectToolbarItem;
 	private MenuItem mntmRedirectTraffic;
+	private Text headerText;
 
 	public MainPage(FilterManager filter) {
 		this.filter = filter;
@@ -98,7 +121,7 @@ public class MainPage {
 		shell = new Shell();
 		shell.setImage(null);
 		shell.setBackground(SWTResourceManager.getColor(new RGB(238, 242, 250)));
-		shell.setSize(569, 619);
+		shell.setSize(552, 658);
 		shell.setText("Service Recorder");
 		shell.setLayout(new FormLayout());
 
@@ -195,7 +218,24 @@ public class MainPage {
 
 		tbtmTape.setControl(tree);
 
-		CTabFolder contentFolder = new CTabFolder(tapeForm, SWT.FLAT);
+		SashForm contentForm = new SashForm(tapeForm, SWT.VERTICAL);
+		contentForm.setBackground(SWTResourceManager.getColor(new RGB(225, 230, 246)));
+
+		CTabFolder headerFolder = new CTabFolder(contentForm, SWT.FLAT);
+		headerFolder.setSelectionBackground(SWTResourceManager.getColor(new RGB(238, 242, 250)));
+		headerFolder.setBackground(SWTResourceManager.getColor(new RGB(238, 242, 250)));
+		headerFolder.setSingle(true);
+
+		CTabItem tbtmHeader = new CTabItem(headerFolder, SWT.NONE);
+		tbtmHeader.setImage(SWTResourceManager.getImage(MainPage.class, "/icons/icon-webdoc.gif"));
+		tbtmHeader.setText("Header");
+
+		headerText = new Text(headerFolder, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
+		headerText.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+		tbtmHeader.setControl(headerText);
+		headerFolder.setSelection(0);
+
+		CTabFolder contentFolder = new CTabFolder(contentForm, SWT.FLAT);
 		contentFolder.setSelectionBackground(SWTResourceManager.getColor(new RGB(238, 242, 250)));
 		contentFolder.setBackground(SWTResourceManager.getColor(new RGB(238, 242, 250)));
 		contentFolder.setSingle(true);
@@ -204,11 +244,20 @@ public class MainPage {
 		tbtmContent.setImage(SWTResourceManager.getImage(MainPage.class, "/icons/icon-webdoc.gif"));
 		tbtmContent.setText("Content");
 
+		ToolBar contentToolBar = new ToolBar(contentFolder, SWT.FLAT);
+		contentToolBar.setBackground(SWTResourceManager.getColor(new RGB(238, 242, 250)));
+
+		ToolItem formatItem = new ToolItem(contentToolBar, SWT.NONE);
+		formatItem.setToolTipText("Format");
+		formatItem.setImage(SWTResourceManager.getImage(MainPage.class, "/icons/format.png"));
+
+		contentFolder.setTopRight(contentToolBar, SWT.RIGHT);
+
 		contentText = new Text(contentFolder, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
 		contentText.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		tbtmContent.setControl(contentText);
 		contentFolder.setSelection(0);
-		tapeForm.setWeights(new int[] { 152, 380 });
+		contentForm.setWeights(new int[] { 150, 196 });
 		CTabFolder logFolderTab = new CTabFolder(mainForm, SWT.FLAT);
 		logFolderTab.setSingle(true);
 		logFolderTab.setSelectionBackground(SWTResourceManager.getColor(new RGB(238, 242, 250)));
@@ -231,6 +280,24 @@ public class MainPage {
 		tbtmLog.setText("Log");
 
 		logTree = new Tree(logFolderTab, SWT.BORDER | SWT.FULL_SELECTION);
+		logTree.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				if (e.button == 3) {
+					Tree tree = (Tree) e.getSource();
+					final TreeItem[] items = tree.getSelection();
+					if (items.length == 1) {
+						TreeItem item = items[0];
+	
+						Toolkit toolkit = Toolkit.getDefaultToolkit();
+						Clipboard clipboard = toolkit.getSystemClipboard();
+						StringSelection strSel = new StringSelection(item.getText(1));
+						clipboard.setContents(strSel, null);
+					}
+				}
+			}
+		});
+
 		logTree.setHeaderVisible(true);
 		tbtmLog.setControl(logTree);
 		logFolderTab.setSelection(0);
@@ -242,7 +309,6 @@ public class MainPage {
 		TreeColumn trclmnValue = new TreeColumn(logTree, SWT.NONE);
 		trclmnValue.setText("Value");
 		trclmnValue.setWidth(300);
-		mainForm.setWeights(new int[] { 296, 217 });
 
 		Menu menu = new Menu(shell, SWT.BAR);
 		shell.setMenuBar(menu);
@@ -336,6 +402,8 @@ public class MainPage {
 
 		MenuItem mntmRemove = new MenuItem(menu2, SWT.NONE);
 		mntmRemove.setText("Remove");
+		tapeForm.setWeights(new int[] { 168, 435 });
+		mainForm.setWeights(new int[] { 338, 214 });
 
 		// Listeners
 
@@ -372,6 +440,80 @@ public class MainPage {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				logTree.removeAll();
+			}
+		});
+
+		formatItem.addSelectionListener(new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				Display.getDefault().asyncExec(new Runnable() {
+					public void run() {
+						String content = contentText.getText();
+
+						if (content.length() == 0) {
+							return;
+						}
+
+						if (isXML(content)) {
+							contentText.setText(prettifyXML(content));
+						} else if (isJSON(content)) {
+							JSONObject json = new JSONObject(content);
+							contentText.setText(json.toString(2));
+						} else {
+							log.error("Unable to format unknown content type");
+						}
+					}
+				});
+
+			}
+
+			private String prettifyXML(String content) throws TransformerFactoryConfigurationError {
+				try {
+
+					DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+					dbf.setNamespaceAware(false);
+					dbf.setValidating(false);
+					dbf.setFeature("http://xml.org/sax/features/namespaces", false);
+					dbf.setFeature("http://xml.org/sax/features/validation", false);
+					dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
+					dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+
+					DocumentBuilder db = dbf.newDocumentBuilder();
+					InputSource is = new InputSource(new StringReader(content));
+
+					final Document document = db.parse(is);
+					OutputFormat format = new OutputFormat(document);
+					format.setLineWidth(100);
+					format.setIndenting(true);
+					format.setIndent(3);
+
+					Writer out = new StringWriter();
+					XMLSerializer serializer = new XMLSerializer(out, format);
+					serializer.serialize(document);
+
+					return out.toString();
+				} catch (Exception e) {
+					log.error("Unable to format xml content");
+				}
+				return content;
+			}
+
+			private Boolean isXML(String content) {
+				if (content.startsWith("<")) {
+					return true;
+				}
+				return false;
+			}
+
+			private Boolean isJSON(String content) {
+				try {
+					new JSONObject(content);
+					return true;
+				} catch (JSONException e) {
+					log.error("Unable to format json content");
+				}
+				return false;
 			}
 		});
 
@@ -644,7 +786,8 @@ public class MainPage {
 								if (request == null) {
 									log.warn("Selected Request object is null");
 								} else {
-									contentText.setText(request.toString());
+									headerText.setText(request.getHeader().toString());
+									contentText.setText(request.getContent());
 								}
 							} else {
 								TreeItem parent = item.getParentItem();
@@ -652,7 +795,8 @@ public class MainPage {
 								if (response == null) {
 									log.warn("Selected response object is null");
 								} else {
-									contentText.setText(response.toString());
+									headerText.setText(response.getHeader().toString());
+									contentText.setText(response.getContent());
 								}
 								
 							}
@@ -779,6 +923,9 @@ public class MainPage {
 				TreeItem requestItem = new TreeItem(incomingItem, SWT.NONE);
 				requestItem.setText("Request");
 
+				TreeItem reqIdItem = new TreeItem(requestItem, SWT.NONE);
+				reqIdItem.setText(new String[] { "Id:", new Integer(req.hashCode()).toString() });
+
 				TreeItem methodItem = new TreeItem(requestItem, SWT.NONE);
 				methodItem.setText(new String[] { "Method:", req.getMethod() });
 
@@ -796,6 +943,9 @@ public class MainPage {
 
 				TreeItem responseItem = new TreeItem(incomingItem, SWT.NONE);
 				responseItem.setText("Response");
+
+				TreeItem resIdItem = new TreeItem(responseItem, SWT.NONE);
+				resIdItem.setText(new String[] { "Id:", new Integer(res.hashCode()).toString() });
 
 				TreeItem statusItem = new TreeItem(responseItem, SWT.NONE);
 				statusItem.setText(new String[] { "Status:", res.getStatus().toString() });

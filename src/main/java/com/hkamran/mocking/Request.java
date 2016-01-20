@@ -2,6 +2,7 @@ package com.hkamran.mocking;
 
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpVersion;
@@ -96,6 +97,14 @@ public class Request {
 		}
 		return type.contains("text/html");
 	}
+	
+	public Boolean isText() {
+		String type = req.headers().get(CONTENT_TYPE);
+		if (type == null) {
+			type = "";
+		}
+		return type.contains("text/html");
+	}	
 
 	public Boolean isXML() {
 		String type = req.headers().get(CONTENT_TYPE);
@@ -173,6 +182,19 @@ public class Request {
 			return false;
 		return true;
 	}
+	
+	public Header getHeader() {
+		Header header = new Header();
+		header.add("Id", new Integer(this.hashCode()).toString());
+		header.add("Method", req.getMethod().toString());
+		header.add("URI", getURI());
+		header.add("Protocol", req.getProtocolVersion().text());
+		header.add("Content-Type", req.headers().get(CONTENT_TYPE));
+		header.add("Match Type", this.getMatchType().toString());
+		header.add("Matched String", this.matchedString);
+		
+		return header;
+	}
 
 	public String toString() {
 		StringBuilder buf = new StringBuilder();
@@ -185,7 +207,7 @@ public class Request {
 		buf.append("   Matched String: " + this.matchedString + StringUtil.NEWLINE);
 		buf.append("   Content: " + StringUtil.NEWLINE);
 		
-		if (isJSON() || isXML()) {
+		if (isJSON() || isXML() || isText()) {
 			buf.append(getContent() + StringUtil.NEWLINE);
 		} else {
 			buf.append("Cannot be displayed " + StringUtil.NEWLINE);

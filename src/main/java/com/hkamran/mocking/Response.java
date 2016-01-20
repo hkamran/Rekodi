@@ -2,6 +2,7 @@ package com.hkamran.mocking;
 
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
@@ -56,6 +57,14 @@ public class Response {
 		}
 		return type.contains("text/xml");
 	}
+	
+	public Boolean isText() {
+		String type = res.headers().get(CONTENT_TYPE);
+		if (type == null) {
+			type = "";
+		}
+		return type.contains("text/html");
+	}
 
 	public Boolean isJSON() {
 		String type = res.headers().get(CONTENT_TYPE);
@@ -108,6 +117,16 @@ public class Response {
 		res.setProtocolVersion(version);
 	}
 	
+	public Header getHeader() {
+		Header header = new Header();
+		header.add("Id", new Integer(this.hashCode()).toString());
+		header.add("Status", res.getStatus().toString());
+		header.add("Protocol", res.getProtocolVersion().text());
+		header.add("Content-Type", res.headers().get(CONTENT_TYPE));
+		header.add("Content-Length", res.headers().get(CONTENT_LENGTH));
+		
+		return header;
+	}
 
 	public String toString() {
 		StringBuilder buf = new StringBuilder();
@@ -119,14 +138,14 @@ public class Response {
 		buf.append("   Content-Type: " + res.headers().get(CONTENT_TYPE) + StringUtil.NEWLINE);
 		buf.append("   Content: " + StringUtil.NEWLINE);
 		
-		if (isJSON() || isXML()) {
+		if (isJSON() || isXML() || isText()) {
 			buf.append(StringEscapeUtils.unescapeJava(getContent()) + StringUtil.NEWLINE);
 		} else {
 			buf.append("Cannot be displayed " + StringUtil.NEWLINE);
 		}
 		return buf.toString();
 	}
-
+	
 	public String toJSON() {
 		JSONObject responseJSON = new JSONObject();
 		responseJSON.put("status", getStatus());
