@@ -56,7 +56,7 @@ public class AboutPage {
 		shlAbout.setText("About Service Recorder");
 
 		txtEclipseJavaEe = new Text(shlAbout, SWT.READ_ONLY | SWT.WRAP);
-		txtEclipseJavaEe.setText("Record and Playback  HTTP SOAP and REST calls.\r\n\r\nBuilt: July August 2015\r\n\r\nhttps://github.com/hkamran");
+		txtEclipseJavaEe.setText("Record and Playback  HTTP SOAP and REST calls.\r\n\r\n\r\nhttps://github.com/hkamran");
 		txtEclipseJavaEe.setBounds(10, 10, 414, 215);
 
 	}
