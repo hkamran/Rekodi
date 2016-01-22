@@ -25,7 +25,7 @@ import com.hkamran.mocking.gui.UIEvent;
 
 public class Tape {
 
-	private final static Logger log = Logger.getLogger(Main.class);
+	private final static Logger log = Logger.getLogger(Tape.class);
 	private Map<Request, List<Response>> tape = Collections.synchronizedMap(new HashMap<Request, List<Response>>());
 	
 	public static UIEvent event;

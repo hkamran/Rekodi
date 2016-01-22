@@ -34,7 +34,6 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	public String redirectHost;
 	public Integer redirectPort;
 	public Boolean redirectState = false;	
-	public StopWatch watch;
 	
 	public static UIEvent event;
 
@@ -43,7 +42,7 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	}
 
 	public FilterManager() {
-		watch = new StopWatch();
+		
 		debugger = new Debugger();
 		tape = new Tape();
 		recorder = new Recorder(tape);
@@ -56,6 +55,7 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 
 			Request req;
 			Response res;
+			StopWatch watch;
 			
 			@Override
 			public HttpResponse requestPre(HttpObject httpObject) {
@@ -82,16 +82,15 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 						req = new Request(httpFullObj);
 						
 						log.info("Request incoming: " + req.hashCode());
-						watch.reset();
+						watch = new StopWatch();
 						watch.start();
 						
 						if (state == State.PROXY) {
-							//insert code for proxy management
+							//No need
 						} else if (state == State.MOCK) {
-							return requestToMock(req);
+							return sendToMock(req);
 						} else if (state == State.RECORD) {
-							return requestToRecord(req);
-
+							//No Need
 						}
 					}
 				} catch (Exception e) {
@@ -107,17 +106,18 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 					if (httpObject instanceof DefaultFullHttpResponse) {
 						DefaultFullHttpResponse httpFullObj = (DefaultFullHttpResponse) httpObject;
 						res = new Response(httpFullObj);
-
+						
 						watch.stop();
-						updateConsole(req, res, TimeUnit.MILLISECONDS.toMillis(watch.getTime()));
+		
+						UIEvent(req, res, TimeUnit.MILLISECONDS.toMillis(watch.getTime()));
 						log.info("Response outgoing: " + res.hashCode() + " for " + req.hashCode());
 						
 						if (state == State.PROXY) {
-
+							//No need.
 						} else if (state == State.MOCK) {
-
+							//No need
 						} else if (state == State.RECORD) {
-							responseToRecorder(res);
+							sendToRecorder(res, req);
 						}
 						
 					}
@@ -132,7 +132,7 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	}
 	
 	
-	public void updateConsole(Request request, Response response, long l) {
+	public void UIEvent(Request request, Response response, long l) {
 		if (event != null) {
 			event.event(request, response, l);
 		}
@@ -142,12 +142,7 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	 * Request Handlers
 	 */
 	
-	private HttpResponse requestToRecord(Request req) {
-		recorder.setCurrentRequest(req);
-		return null;
-	}
-
-	public HttpResponse requestToMock(final Request request) {
+	public HttpResponse sendToMock(final Request request) {
 		if (tape == null) {
 			return null;
 		}
@@ -158,7 +153,7 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 			response = debugger.analyze(request);
 		}			
 
-		updateConsole(request, response, 0);
+		UIEvent(request, response, 0);
 	
 		if (response != null) {
 			log.info("Mocked Response outgoing: " + response.hashCode() + " for " + request.hashCode());
@@ -169,12 +164,8 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 		}
 	}
 	
-	/**
-	 * Response Handlers
-	 */
-	
-	public HttpResponse responseToRecorder(Response res) {
-		recorder.save(res);
+	public HttpResponse sendToRecorder(Response res, Request req) {
+		recorder.add(req, res);
 		return null;
 	}
 	
@@ -254,5 +245,6 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	public int getMaximumResponseBufferSizeInBytes() {
 		return MAX_SIZE;
 	}	
+	
 
 }

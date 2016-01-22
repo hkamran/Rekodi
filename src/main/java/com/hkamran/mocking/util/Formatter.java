@@ -11,16 +11,15 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import org.apache.log4j.Logger;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
-import com.hkamran.mocking.Main;
-
 public class Formatter {
 
-	private final static Logger log = Logger.getLogger(Main.class);
+	private final static Logger log = Logger.getLogger(Formatter.class);
 
 	public static String format(String content) {
 
@@ -28,7 +27,7 @@ public class Formatter {
 			log.warn("Formating a null content");
 			return "";
 		}
-		
+
 		if (content.length() == 0) {
 			return content;
 		}
@@ -36,12 +35,22 @@ public class Formatter {
 		if (isXML(content)) {
 			return prettifyXML(content);
 		} else if (isJSON(content)) {
-			JSONObject json = new JSONObject(content);
-			return json.toString(2);
+			return prettyifyJSON(content);
 		} else {
 			log.error("Unable to format unknown content type");
 		}
 		return content;
+
+	}
+
+	private static String prettyifyJSON(String content) {
+		try {
+			JSONObject json = new JSONObject(content);
+			return json.toString(2);
+		} catch (JSONException e) {
+			log.error("Unable to format JSON content");
+			return content;
+		}
 
 	}
 
@@ -87,8 +96,13 @@ public class Formatter {
 		try {
 			new JSONObject(content);
 			return true;
-		} catch (JSONException e) {
-			log.error("Unable to format json content");
+		} catch (JSONException ex) {
+			try {
+				new JSONArray(content);
+				return true;
+			} catch (JSONException ex1) {
+
+			}
 		}
 		return false;
 	}

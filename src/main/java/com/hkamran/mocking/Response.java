@@ -9,6 +9,8 @@ import io.netty.util.internal.StringUtil;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.entity.ContentType;
@@ -118,15 +120,15 @@ public class Response {
 		res.setProtocolVersion(version);
 	}
 	
-	public Header getHeader() {
-		Header header = new Header();
-		header.add("Id", new Integer(this.hashCode()).toString());
-		header.add("Status", res.getStatus().toString());
-		header.add("Protocol", res.getProtocolVersion().text());
-		header.add("Content-Type", res.headers().get(CONTENT_TYPE));
-		header.add("Content-Length", res.headers().get(CONTENT_LENGTH));
+	public Map<String, String> getHeaders() {
+		Map<String, String> headers = new HashMap<String, String>();
+		headers.put("Id", new Integer(this.hashCode()).toString());
+		headers.put("Status", res.getStatus().toString());
+		headers.put("Protocol", res.getProtocolVersion().text());
+		headers.put("Content-Type", res.headers().get(CONTENT_TYPE));
+		headers.put("Content-Length", res.headers().get(CONTENT_LENGTH));
 		
-		return header;
+		return headers;
 	}
 
 	public String toString() {

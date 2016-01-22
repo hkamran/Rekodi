@@ -24,8 +24,8 @@ public class Main {
 		 */
 		
 		FilterManager filter = new FilterManager();
-		Integer port = 8090;
-		String host = "";
+		Integer port = 7082;
+		String host = "wdbd-web-app01";
 		
 		filter.setState(State.PROXY);
 		filter.setRedirectInfo(host, port);

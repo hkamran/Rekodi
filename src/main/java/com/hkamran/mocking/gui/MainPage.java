@@ -1,5 +1,7 @@
 package com.hkamran.mocking.gui;
 
+import io.netty.util.internal.StringUtil;
+
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -8,6 +10,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
@@ -410,6 +413,7 @@ public class MainPage {
 				updateTree(tape);
 				contentText.setText("");
 				headerText.setText("");
+				
 			}
 		});
 
@@ -420,6 +424,7 @@ public class MainPage {
 				filter.setTape(tape);
 				updateTree(tape);
 				contentText.setText("");
+				headerText.setText("");
 			}
 		});
 
@@ -484,6 +489,7 @@ public class MainPage {
 
 						tape.put(request, responses);
 						contentText.setText("");
+						headerText.setText("");
 
 					} else {
 						Tape tape = filter.getTape();
@@ -494,6 +500,7 @@ public class MainPage {
 
 						updateTree(tape);
 						contentText.setText("");
+						headerText.setText("");
 					}
 				}
 
@@ -689,6 +696,22 @@ public class MainPage {
 		tree.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				Display.getDefault().syncExec(new Runnable() {
+					
+					private String transformMap(Map<String, String> map) {
+						StringBuilder buf = new StringBuilder();
+						Integer count = 0;
+						for (String key : map.keySet()) {
+							if (count == map.size() - 1) {
+								buf.append(key + ": " + map.get(key));
+							} else {
+								buf.append(key + ": " + map.get(key) + StringUtil.NEWLINE);
+							}
+							count++;
+						}
+						
+						return buf.toString();
+					}
+					
 					public void run() {
 						Tree tree = (Tree) e.getSource();
 						final TreeItem[] items = tree.getSelection();
@@ -699,7 +722,7 @@ public class MainPage {
 								if (request == null) {
 									log.warn("Selected Request object is null");
 								} else {
-									headerText.setText(request.getHeader().toString());
+									headerText.setText(transformMap(request.getHeaders()));
 									contentText.setText(request.getContent());
 								}
 							} else {
@@ -708,7 +731,7 @@ public class MainPage {
 								if (response == null) {
 									log.warn("Selected response object is null");
 								} else {
-									headerText.setText(response.getHeader().toString());
+									headerText.setText(transformMap(response.getHeaders()));
 									contentText.setText(response.getContent());
 								}
 								
@@ -754,6 +777,7 @@ public class MainPage {
 						Tape tape = Tape.load(file);
 						filter.setTape(tape);
 						contentText.setText("");
+						headerText.setText("");
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
@@ -880,4 +904,6 @@ public class MainPage {
 		});
 
 	}
+	
+
 }

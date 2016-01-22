@@ -9,6 +9,8 @@ import io.netty.util.internal.StringUtil;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.http.entity.ContentType;
 
@@ -184,22 +186,23 @@ public class Request {
 		return true;
 	}
 	
-	public Header getHeader() {
-		Header header = new Header();
-		header.add("Id", new Integer(this.hashCode()).toString());
-		header.add("Method", req.getMethod().toString());
-		header.add("URI", getURI());
-		header.add("Protocol", req.getProtocolVersion().text());
+	public Map<String, String> getHeaders() {
+		Map<String, String> headers = new HashMap<String, String>();
+		
+		headers.put("Id", new Integer(this.hashCode()).toString());
+		headers.put("Method", req.getMethod().toString());
+		headers.put("URI", getURI());
+		headers.put("Protocol", req.getProtocolVersion().text());
 		
 		String contentType = req.headers().get(CONTENT_TYPE);
 		if (contentType != null) {
-			header.add("Content-Type", req.headers().get(CONTENT_TYPE));
+			headers.put("Content-Type", req.headers().get(CONTENT_TYPE));
 		}
 		
-		header.add("Match Type", this.getMatchType().toString());
-		header.add("Matched String", this.matchedString);
+		headers.put("Match Type", this.getMatchType().toString());
+		headers.put("Matched String", this.matchedString);
 		
-		return header;
+		return headers;
 	}
 
 	public String toString() {
