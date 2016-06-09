@@ -1,0 +1,20 @@
+/*
+ * jQuery TipTop v1.0
+ * http://gilbitron.github.io/TipTop
+ *
+ * Copyright 2013, Dev7studios
+ * Free to use and abuse under the MIT license.
+ * http://www.opensource.org/licenses/mit-license.php
+ */
+
+.tiptop {
+	position: absolute;
+	z-index: 9999;
+	max-width: 300px;
+	padding: 5px;
+	font: 11px/1.6em "Helvetica Neue", Helvetica, Arial, sans-serif;
+	color: #fff;
+	background: #222;
+	margin-top: -15px;
+	margin-left: 10px;
+}

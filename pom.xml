@@ -38,8 +38,8 @@
 				</configuration>
 				<executions>
 					<execution>
-						<id>make-assembly</id> 
-						<phase>package</phase> 
+						<id>make-assembly</id>
+						<phase>package</phase>
 						<goals>
 							<goal>single</goal>
 						</goals>
@@ -114,6 +114,13 @@
 			<artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
 			<version>4.3</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.eclipse.jetty.aggregate</groupId>
+			<artifactId>jetty-all</artifactId>
+			<version>8.1.19.v20160209</version>
+		</dependency>
+
 
 
 	</dependencies>
