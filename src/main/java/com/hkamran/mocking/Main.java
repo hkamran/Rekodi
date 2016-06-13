@@ -8,6 +8,7 @@ import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 import com.hkamran.mocking.FilterManager.State;
 import com.hkamran.mocking.gui.MainPage;
 import com.hkamran.mocking.gui.UIEvent;
+import com.hkamran.mocking.rest.RestService;
 
 /**
  * Hello world!
@@ -24,16 +25,13 @@ public class Main {
 		 */
 		
 		FilterManager filter = new FilterManager();
-		Integer port = 7082;
-		String host = "wdbd-web-app01";
+		Integer port = 80;
+		String host = "www.thomas-bayer.com";
 		
 		filter.setState(State.PROXY);
 		filter.setRedirectInfo(host, port);
 		filter.setRedirectState(false);
 		
-		/**
-		 * Setup UI
-		 */
 		
 		final MainPage window = new MainPage(filter);
 		
@@ -66,7 +64,9 @@ public class Main {
 					window.debugger((Debugger) obj);
 				}
 			}
-		});						
+		});	
+		
+		RestService.setFilter(filter);
 		
 		
 		/**
@@ -77,7 +77,9 @@ public class Main {
 
 		log.info("Starting Service Recorder at port " + proxyPort);
 		HttpProxyServer proxy = DefaultHttpProxyServer.bootstrap().withPort(proxyPort).withFiltersSource(filter).withManInTheMiddle(new SelfSignedMitmManager()).start();
+		RestService.start();
 		window.open();
+
 		proxy.stop();
 	}
 }

@@ -130,7 +130,38 @@ public class Response {
 		
 		return headers;
 	}
-
+	
+//	@Override
+//	public int hashCode() {
+//		final int prime = 31;
+//		int result = 1;
+//		String content = toString();
+//		int charValue = 0;
+//		for (char c : content.toCharArray()) {
+//			charValue += c;
+//		}
+//		result = prime * result + charValue;
+//		return result;
+//	}
+//
+//	@Override
+//	public boolean equals(Object obj) {
+//		if (this == obj)
+//			return true;
+//		if (obj == null)
+//			return false;
+//		if (getClass() != obj.getClass())
+//			return false;
+//		Response other = (Response) obj;
+//		if (res == null) {
+//			if (other.res != null)
+//				return false;
+//		} else if (!toString().equalsIgnoreCase(other.toString())) {
+//			return false;
+//		}
+//		return true;
+//	}
+	
 	public String toString() {
 		StringBuilder buf = new StringBuilder();
 

@@ -1,6 +1,9 @@
 package com.hkamran.mocking;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +37,8 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	public String redirectHost;
 	public Integer redirectPort;
 	public Boolean redirectState = false;	
+	
+	private List<Event> events = new ArrayList<Event>();
 	
 	public static UIEvent event;
 
@@ -109,7 +114,10 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 						
 						watch.stop();
 		
-						UIEvent(req, res, TimeUnit.MILLISECONDS.toMillis(watch.getTime()));
+						Long duration = TimeUnit.MILLISECONDS.toMillis(watch.getTime());
+						UIEvent(req, res, duration);
+						events.add(new Event(req, res, new Date(watch.getStartTime()), duration, state));
+
 						log.info("Response outgoing: " + res.hashCode() + " for " + req.hashCode());
 						
 						if (state == State.PROXY) {
@@ -221,6 +229,12 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	
 	public Debugger getDebugger() {
 		return debugger;
+	}
+	
+	public List<Event> getEvents() {
+		List<Event> events = this.events;
+		this.events = new ArrayList<Event>();
+		return events;
 	}
 	
 	public void lookupChainedProxies(HttpRequest httpRequest, Queue<ChainedProxy> chainedProxies) {

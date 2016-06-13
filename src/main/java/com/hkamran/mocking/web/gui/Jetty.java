@@ -5,16 +5,12 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
-
 
 public class Jetty {
 
 	public static void main(String[] args) throws Exception {
-	    Server server = new Server();
-	    SelectChannelConnector connector = new SelectChannelConnector();
-	    connector.setPort(8080);
-	    server.addConnector(connector);
+	    Server server = new Server(8090);
+
 
 	    ResourceHandler resource_handler = new ResourceHandler();
 	    resource_handler.setDirectoriesListed(true);
