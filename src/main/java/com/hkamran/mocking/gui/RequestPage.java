@@ -125,7 +125,7 @@ public class RequestPage {
 		fd_btnSave.left = new FormAttachment(100, -71);
 		btnSave.setLayoutData(fd_btnSave);
 		btnSave.setText("Save");
-		contentTypeCombo.select(contentTypeCombo.indexOf(request.getContentType().toString()));
+		//contentTypeCombo.select(contentTypeCombo.indexOf(request.getContentType().toString()));
 		contentText.setText(request.getContent());
 
 		matchedString = new Text(composite, SWT.BORDER);
@@ -228,11 +228,11 @@ public class RequestPage {
 
 				request.setMethod(method);
 				request.setURI(uri);
-				request.setVersion(httpVersion);
+				//request.setVersion(httpVersion);
 				request.setMatchType(type);
 				request.setMatchString(matchedStrings);
 				request.setContent(contentTexts);
-				request.setContentType(contentType);
+				//request.setContentType(contentType);
 
 				shlEditRequest.dispose();
 			}

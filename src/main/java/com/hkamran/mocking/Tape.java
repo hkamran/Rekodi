@@ -18,6 +18,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.hkamran.mocking.Request.MATCHTYPE;
@@ -30,15 +31,15 @@ public class Tape {
 	
 	public static UIEvent event;
 	
-	private class Constants {
-		private static final String MATCHED_STRING = "matchedString";
-		private static final String MATCH_TYPE = "matchType";
-		private static final String STATUS = "status";
-		private static final String URI = "uri";
-		private static final String METHOD = "method";
-		private static final String CONTENT = "content";
-		private static final String PROTOCOL = "protocol";
-		private static final String TYPE = "type";
+	public static class Constants {
+		public static final String MATCHED_STRING = "matchedString";
+		public static final String MATCH_TYPE = "matchType";
+		public static final String STATUS = "status";
+		public static final String URI = "uri";
+		public static final String METHOD = "method";
+		public static final String CONTENT = "content";
+		public static final String PROTOCOL = "protocol";
+		public static final String TYPE = "type";
 	}
 
 	public void put(Request request, Response response) {
@@ -47,6 +48,7 @@ public class Tape {
 		}
 
 		List<Response> responses = tape.get(request);
+		response.setId(responses.size());
 		responses.add(response);
 
 		updateTreeUI();
@@ -136,43 +138,59 @@ public class Tape {
 		Tape.event = e;
 	}
 
-	public void export(String path) throws IOException {
+	public JSONObject toJSON() {
 		JSONObject mockedCalls = new JSONObject();
-		try {
-			for (Request request : tape.keySet()) {
-				List<Response> responses = tape.get(request);
-				JSONObject requestJSON = new JSONObject();
+		for (Request request : tape.keySet()) {
+			List<Response> responses = tape.get(request);
+			JSONObject requestJSON = new JSONObject();
 
-				requestJSON.put(Constants.URI, request.getURI());
-				requestJSON.put(Constants.METHOD, request.getMethod());
-				requestJSON.put(Constants.CONTENT, request.getContent());
-				requestJSON.put(Constants.PROTOCOL, request.getProtocol());
-				requestJSON.put(Constants.TYPE, request.getContentType());
-				requestJSON.put(Constants.MATCH_TYPE, request.getMatchType().toString());
-				requestJSON.put(Constants.MATCHED_STRING, request.matchedString);
-
-				JSONObject responsesJSON = new JSONObject();
-				for (Integer i = 0; i < responses.size(); i++) {
-					Response response = responses.get(i);
-					JSONObject responseJSON = new JSONObject();
-					responseJSON.put(Constants.STATUS, response.getStatus());
-					responseJSON.put(Constants.TYPE, response.getContentType());
-					responseJSON.put(Constants.PROTOCOL, response.getProtocol());
-					responseJSON.put(Constants.CONTENT, response.getContent());
-					responsesJSON.put(i.toString(), responseJSON);
-				}
-				requestJSON.put("responses", responsesJSON);
-				mockedCalls.put(request.hashCode() + "", requestJSON);
+			JSONArray responsesJSON = new JSONArray();
+			for (Integer i = 0; i < responses.size(); i++) {
+				Response response = responses.get(i);
+				responsesJSON.put(response.toJSON());
 			}
-
+			requestJSON.put("responses", responsesJSON);
+			requestJSON.put("request", request.toJSON());
+			mockedCalls.put(request.hashCode() + "", requestJSON);
+		}
+		return mockedCalls;
+	}
+	
+	public void export(String path) throws IOException {
+		try {
 			File file = new File(path);
-			FileUtils.writeByteArrayToFile(file, mockedCalls.toString(4).getBytes());
+			FileUtils.writeByteArrayToFile(file, toJSON().toString(4).getBytes());
 			log.info("Exported tape " + tape.hashCode() + " to " + path);
 		} catch (Exception e) {
 			log.info("Unable to export tape due to " + e.getMessage());
 			e.printStackTrace();
 		}
+	}
+	
+	public void parseJSON(String source) {
+		Tape tape = new Tape();
+		JSONObject mockedCalls = new JSONObject(source);
 
+		@SuppressWarnings("rawtypes")
+		Iterator calls = mockedCalls.keys();
+		while (calls.hasNext()) {
+			String hashCode = (String) calls.next();
+			JSONObject mockedCall = mockedCalls.getJSONObject(hashCode);
+
+
+			Request request = Request.parseJSON(mockedCall.toString());
+
+			JSONObject responsesJSON = mockedCall.getJSONObject("responses");
+			Integer length = responsesJSON.length();
+
+			for (Integer index = 0; index < length; index++) {
+				JSONObject responseJSON = responsesJSON.getJSONObject(index.toString());
+				Response response = Response.parseJSON(responseJSON.toString());
+				tape.put(request, response);
+			}
+		}
+		
+		this.tape = tape.tape;
 	}
 
 	public static Tape load(String path) throws IOException {
@@ -181,49 +199,8 @@ public class Tape {
 
 			File file = new File(path);
 			String state = FileUtils.readFileToString(file);
-			JSONObject mockedCalls = new JSONObject(state);
-
-			@SuppressWarnings("rawtypes")
-			Iterator calls = mockedCalls.keys();
-			while (calls.hasNext()) {
-				String hashCode = (String) calls.next();
-				JSONObject mockedCall = mockedCalls.getJSONObject(hashCode);
-
-				String uri = mockedCall.getString(Constants.URI);
-				String method = mockedCall.getString(Constants.METHOD);
-				String content1 = mockedCall.getString(Constants.CONTENT);
-				String protocol = mockedCall.getString(Constants.PROTOCOL);
-				String type1 = ContentType.WILDCARD.toString();
-				if (mockedCall.has(Constants.TYPE)) {
-					type1 = mockedCall.getString(Constants.TYPE);
-				}
-				MATCHTYPE matchType = MATCHTYPE.valueOf(mockedCall.getString(Constants.MATCH_TYPE));
-				String matchedString = mockedCall.getString(Constants.MATCHED_STRING);
-
-				JSONObject responsesJSON = mockedCall.getJSONObject("responses");
-				Integer length = responsesJSON.length();
-				Request request = new Request(new DefaultFullHttpRequest(HttpVersion.valueOf(protocol), HttpMethod.valueOf(method), uri));
-				request.setContent(content1);
-				request.setContentType(ContentType.parse(type1));
-				request.setMatchType(matchType);
-				request.setMatchString(matchedString);
-
-				for (Integer index = 0; index < length; index++) {
-					JSONObject responseJSON = responsesJSON.getJSONObject(index.toString());
-					Integer status = responseJSON.getInt(Constants.STATUS);
-					String type = responseJSON.getString(Constants.TYPE);
-					String content = responseJSON.getString(Constants.CONTENT);
-
-					String resProtocol = responseJSON.getString(Constants.PROTOCOL);
-
-					Response response = new Response(
-							new DefaultFullHttpResponse(HttpVersion.valueOf(resProtocol), HttpResponseStatus.valueOf(status)));
-					response.setContent(content, ContentType.parse(type));
-
-					tape.put(request, response);
-				}
-
-			}
+			tape.parseJSON(state);
+			
 			log.info("Loaded tape " + tape.hashCode() + " from " + path);
 			return tape;
 		} catch (Exception e) {

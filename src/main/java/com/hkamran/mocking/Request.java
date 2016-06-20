@@ -3,16 +3,15 @@ package com.hkamran.mocking;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.internal.StringUtil;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import org.apache.http.entity.ContentType;
+import org.json.JSONObject;
 
 import com.hkamran.mocking.util.Formatter;
 
@@ -25,17 +24,47 @@ public class Request {
 	private MATCHTYPE matchType = Request.MATCHTYPE.request;
 	public String matchedString = "";
 
-	private static final String CONTENT_TYPE = "Content-Type";
-
-	private DefaultFullHttpRequest req;
+	private Map<String, String> headers = new HashMap<String, String>();
+	
+	private String content = "";
+	private String protocol = "";
+	private String method = "";
+	private String uri = "";
+	
 	public Integer counter = 0;
 
 	public Request(DefaultFullHttpRequest req) {
-		this.req = (DefaultFullHttpRequest) req.copy();
-		this.req.retain();
+		DefaultFullHttpRequest reqCopy = (DefaultFullHttpRequest) req.copy();
+		reqCopy.retain();
+		
+		for (Entry<String, String> entry : reqCopy.headers()) {
+			String key = entry.getKey();
+			String value = entry.getValue();
+			if (value == null) {
+				value = "";
+			}
+			
+			headers.put(key, value);
+		}
+		
+		content = parseContent(reqCopy);
+		protocol = reqCopy.getProtocolVersion().toString();
+		method = reqCopy.getMethod().toString();
+		uri = reqCopy.getUri();
+		
+		
+		System.out.println(toJSON());
+	}
+	
+	public Request(Map<String, String> headers, String content, String protocol, String method, String uri) {
+		this.content = content;
+		this.protocol = protocol;
+		this.method = method;
+		this.uri = uri;
+		this.headers = headers;
 	}
 
-	public String getContent() {
+	private String parseContent(DefaultFullHttpRequest req) {
 		ByteBufInputStream bufInputStream = new ByteBufInputStream(req.content().copy());
 		StringBuilder content = new StringBuilder();
 
@@ -54,67 +83,29 @@ public class Request {
 		}
 		return Formatter.format(content.toString());
 	}
-
-	public int compareTo(Request d) {
-		return (this.getURI()).compareTo(d.getURI());
+	
+	public String getContent() {
+		return content;
 	}
 
-	public HttpObject getHttpObject() {
-		return req.duplicate();
+	public int compareTo(Request d) {
+		return (this.uri).compareTo(d.getURI());
+	}
+
+	public Request clone() {
+		return new Request(getHeaders(), getContent(), getProtocol(), getMethod(), getURI());
 	}
 
 	public String getMethod() {
-		return req.getMethod().toString();
+		return method;
 	}
 
 	public String getProtocol() {
-		return req.getProtocolVersion().toString();
-	}
-
-	public String getHost() {
-		return req.headers().get("Host");
+		return protocol;
 	}
 
 	public void setContent(String value) {
-		req.content().clear();
-		req.content().writeBytes(value.getBytes(StandardCharsets.UTF_8));
-		req.headers().set("Content-Length", value.length());
-	}
-
-	public void setContentType(ContentType type) {
-		req.headers().set(CONTENT_TYPE, type.toString());
-	}
-
-	public Boolean isJSON() {
-		String type = req.headers().get(CONTENT_TYPE);
-		if (type == null) {
-			type = "";
-		}
-		return type.contains("application/json");
-	}
-
-	public Boolean isHTML() {
-		String type = req.headers().get(CONTENT_TYPE);
-		if (type == null) {
-			type = "";
-		}
-		return type.contains("text/html");
-	}
-	
-	public Boolean isText() {
-		String type = req.headers().get(CONTENT_TYPE);
-		if (type == null) {
-			type = "";
-		}
-		return type.contains("text/html");
-	}	
-
-	public Boolean isXML() {
-		String type = req.headers().get(CONTENT_TYPE);
-		if (type == null) {
-			type = "";
-		}
-		return type.contains("text/xml");
+		this.content = value;
 	}
 
 	public MATCHTYPE getMatchType() {
@@ -126,33 +117,31 @@ public class Request {
 	}
 
 	public String getURI() {
-
-		return req.getUri();
+		return this.uri;
 	}
 
 	public void setURI(String uri) {
-		req.setUri(uri);
-	}
-
-	public void setHostHeader(String host) {
-		req.headers().remove("Host");
-		req.headers().set("Host", host);
+		this.uri = uri;
 	}
 
 	public void setMethod(HttpMethod method) {
-		req.setMethod(method);
+		this.method = method.toString();
+	}
+	
+	public void setMethod(String method) {
+		this.method = method.toString();
 	}
 
-	public void setVersion(HttpVersion httpVersion) {
-		req.setProtocolVersion(httpVersion);
+	public void setProtocol(HttpVersion httpVersion) {
+		this.protocol = httpVersion.toString();
 	}
-
-	public String getContentType() {
-		String contentType = req.headers().get(CONTENT_TYPE);
-		if (contentType == null) {
-			return "";
-		}
-		return contentType;
+	
+	public void setProtocol(String httpVersion) {
+		this.protocol = httpVersion.toString();
+	}
+	
+	public void setHeader(String key, String value) {
+		this.headers.put(key, value);
 	}
 
 	@Override
@@ -170,62 +159,97 @@ public class Request {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) 
 			return true;
 		if (obj == null)
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		Request other = (Request) obj;
-		if (req == null) {
-			if (other.req != null)
-				return false;
-		} else if (!this.getURI().equalsIgnoreCase(other.getURI()) || !this.getMethod().equalsIgnoreCase(other.getMethod().toString())
+	
+		if (!this.getURI().equalsIgnoreCase(other.getURI()) || !this.getMethod().equalsIgnoreCase(other.getMethod().toString())
 				|| !getContent().equalsIgnoreCase(other.getContent()))
 			return false;
 		return true;
 	}
 	
-	public Map<String, String> getHeaders() {
-		Map<String, String> headers = new HashMap<String, String>();
-		
-		headers.put("Id", new Integer(this.hashCode()).toString());
-		headers.put("Method", req.getMethod().toString());
-		headers.put("URI", getURI());
-		headers.put("Protocol", req.getProtocolVersion().text());
-		
-		String contentType = req.headers().get(CONTENT_TYPE);
-		if (contentType != null) {
-			headers.put("Content-Type", req.headers().get(CONTENT_TYPE));
-		}
-		
-		headers.put("Match Type", this.getMatchType().toString());
-		headers.put("Matched String", this.matchedString);
-		
+	public Map<String, String> getHeaders() {	
 		return headers;
+	}
+	
+	public void setMatchString(String matchedString) {
+		this.matchedString = matchedString;
 	}
 
 	public String toString() {
 		StringBuilder buf = new StringBuilder();
 		buf.append("Request" + StringUtil.NEWLINE);
-		buf.append("   Method: " + req.getMethod().toString() + StringUtil.NEWLINE);
+		buf.append("   Headers: " + headers.toString() + StringUtil.NEWLINE);
 		buf.append("   URI: " + getURI() + StringUtil.NEWLINE);
-		buf.append("   Protocol: " + req.getProtocolVersion().text() + StringUtil.NEWLINE);
-		buf.append("   Content-Type: " + req.headers().get(CONTENT_TYPE) + StringUtil.NEWLINE);
+		buf.append("   Protocol: " + getProtocol() + StringUtil.NEWLINE);
+		buf.append("   Method: " + getMethod() + StringUtil.NEWLINE);
 		buf.append("   Match Type: " + this.getMatchType().toString() + StringUtil.NEWLINE);
 		buf.append("   Matched String: " + this.matchedString + StringUtil.NEWLINE);
 		buf.append("   Content: " + StringUtil.NEWLINE);
 		
-		if (isJSON() || isXML() || isText()) {
+		//if (isJSON() || isXML() || isText()) {
 			buf.append(getContent() + StringUtil.NEWLINE);
-		} else {
-			buf.append("Cannot be displayed " + StringUtil.NEWLINE);
-		}
+		//} else {
+		//	buf.append("Cannot be displayed " + StringUtil.NEWLINE);
+		//}
 		return buf.toString();
 	}
+	
+	public JSONObject toJSON() {
+		JSONObject json = new JSONObject();
+		json.put("uri", getURI());
+		json.put("protocol", this.getProtocol());
+		json.put("method", this.getMethod());
+		json.put("content", this.getContent());
+		json.put("matchType", this.getMatchType());
+		json.put("matchString", this.matchedString);
+		json.put("id", this.hashCode());
+		json.put("headers", this.headers);
+		
+		return json;
+	}
+	
+	public static Request parseJSON(String source) {
+		try {
+			JSONObject json = new JSONObject(source);
+			System.out.println(json);
+			String uri = json.getString("uri");
+			String protocol = json.getString("protocol");
+			String method = json.getString("method");
+			String content = json.getString("content");
+			
+			String matchType = json.getString("matchType");
+			String matchString = json.getString("matchString");
+			
+			JSONObject headersJSON = json.getJSONObject("headers");
+			
+			Map<String, String> headers = new HashMap<String, String>();
+			for (Object key : headersJSON.keySet()) {
+				headers.put(key.toString(), headersJSON.getString(key.toString()));
+			}
+			
+			Request request = new Request(headers, content, protocol, method, uri);
+			request.setMatchType(MATCHTYPE.valueOf(matchType));
+			request.setMatchString(matchString);
+			
+			return request;
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
-	public void setMatchString(String matchedString) {
-		this.matchedString = matchedString;
+	
+	public static void main(String[] args) {
+		Request request = Request.parseJSON("{'headers':{'Accept-Language':'null'},'content':'','protocol':'HTTP/1.1','matchString':'','matchType':'request','method':'POST','uri':'/'}");
+		System.out.println(request.toJSON());
+	
 	}
 
 }

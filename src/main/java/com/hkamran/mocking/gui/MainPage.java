@@ -869,11 +869,11 @@ public class MainPage {
 				TreeItem uriItem = new TreeItem(requestItem, SWT.NONE);
 				uriItem.setText(new String[] { "URI:", req.getURI() });
 
-				TreeItem hostItem = new TreeItem(requestItem, SWT.NONE);
-				hostItem.setText(new String[] { "Host:", req.getHost() });
+				//TreeItem hostItem = new TreeItem(requestItem, SWT.NONE);
+				//hostItem.setText(new String[] { "Host:", req.getHost() });
 
-				TreeItem contentTypeItem = new TreeItem(requestItem, SWT.NONE);
-				contentTypeItem.setText(new String[] { "Content-Type:", req.getContentType() });
+				//TreeItem contentTypeItem = new TreeItem(requestItem, SWT.NONE);
+				//contentTypeItem.setText(new String[] { "Content-Type:", req.getContentType() });
 
 				TreeItem contentItem = new TreeItem(requestItem, SWT.NONE);
 				contentItem.setText(new String[] { "Content:", req.getContent() });
@@ -889,9 +889,6 @@ public class MainPage {
 
 				TreeItem protocolItem = new TreeItem(responseItem, SWT.NONE);
 				protocolItem.setText(new String[] { "Protocol:", res.getProtocol() });
-
-				TreeItem contentTypeItem2 = new TreeItem(responseItem, SWT.NONE);
-				contentTypeItem2.setText(new String[] { "Content-Type:", res.getContentType() });
 
 				TreeItem contentItem2 = new TreeItem(responseItem, SWT.NONE);
 				contentItem2.setText(new String[] { "Content:", res.getContent() });

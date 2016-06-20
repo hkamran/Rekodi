@@ -2,34 +2,60 @@ package com.hkamran.mocking;
 
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpObject;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.internal.StringUtil;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.http.entity.ContentType;
 import org.json.JSONObject;
 
 import com.hkamran.mocking.util.Formatter;
 
 public class Response {
-	private static final String CONTENT_LENGTH = "Content-Length";
-	private static final String CONTENT_TYPE = "Content-Type";
-	
-	private DefaultFullHttpResponse res;
 
+	private Map<String, String> headers = new HashMap<String, String>();
+	
+	private String protocol;
+	private Integer status;
+	private String content;
+	
+	private Integer id = -1;
+	
 	public Response(DefaultFullHttpResponse res) {
-		this.res = (DefaultFullHttpResponse) res.copy();
-		this.res.retain();
+		DefaultFullHttpResponse resCopy = (DefaultFullHttpResponse) res.copy();
+		resCopy.retain();
+		
+		this.content = parseContent(resCopy);
+		this.protocol = resCopy.getProtocolVersion().toString();
+		this.status = resCopy.getStatus().code();
+		
+		for (Entry<String, String> entry : resCopy.headers()) {
+			String key = entry.getKey();
+			String value = entry.getValue();
+			if (value == null) {
+				value = "";
+			}
+			
+			headers.put(key, value);
+		}
+		
+	}
+	
+	public Response(Map<String, String> headers, String content, String protocol, Integer status) {
+		this.headers = headers;
+		this.content = content;
+		this.protocol = protocol;
+		this.status = status;
 	}
 
-	public String getContent() {
+	private String parseContent(DefaultFullHttpResponse res) {
 		ByteBufInputStream bufInputStream = new ByteBufInputStream(res.content().copy());
 		StringBuilder content = new StringBuilder();
 
@@ -49,85 +75,47 @@ public class Response {
 		return Formatter.format(content.toString());
 	}
 
-	public HttpObject getHttpObject() {
-		return res.duplicate();
-	}
-
-	public Boolean isXML() {
-		String type = res.headers().get(CONTENT_TYPE);
-		if (type == null) {
-			type = "";
-		}
-		return type.contains("text/xml");
+	public Response clone() {
+		return new Response(getHeaders(), getContent(), getProtocol(), getStatus());
 	}
 	
-	public Boolean isText() {
-		String type = res.headers().get(CONTENT_TYPE);
-		if (type == null) {
-			type = "";
-		}
-		return type.contains("text/html");
-	}
-
-	public Boolean isJSON() {
-		String type = res.headers().get(CONTENT_TYPE);
-		if (type == null) {
-			type = "";
-		}
-		return type.contains("application/json");
-	}
-
-	public Boolean isHTML() {
-		String type = res.headers().get(CONTENT_TYPE);
-		if (type == null) {
-			type = "";
-		}
-		return type.contains("text/html");
+	public String getContent() {
+		return content;
 	}
 
 	public Integer getStatus() {
-		return res.getStatus().code();
+		return this.status;
 	}
 
 	public String getProtocol() {
-		return res.getProtocolVersion().toString();
-	}
-
-	public String getContentType() {
-		String contentType = res.headers().get(CONTENT_TYPE);
-		if (contentType == null) {
-			return "";
-		}
-		return contentType;
-	}
-
-	public void setContent(String value, ContentType type) {
-		res.content().clear();
-		res.content().writeBytes(value.getBytes(StandardCharsets.UTF_8));
-		res.headers().set("Content-Length", value.length());
-		setContentType(type);
-	}
-
-	public void setContentType(ContentType type) {
-		res.headers().set(CONTENT_TYPE, type.toString());
+		return this.protocol;
 	}
 	
-	public void setStatus(HttpResponseStatus status) {
-		res.setStatus(status);
+	public void setId(Integer id) {
+		this.id = id;
 	}
 	
-	public void setHttpVersion(HttpVersion version) {
-		res.setProtocolVersion(version);
+	public Integer getId() {
+		return this.id;
+	}
+
+	public void setContent(String content) {
+		this.content = content;
+	}
+	
+	public void setStatus(Integer status) {
+		this.status = status;
+	}
+	
+	public void setProtocol(HttpVersion version) {
+		this.protocol = version.toString();
+	}
+	
+	public void setProtocol(String version) {
+		this.protocol = version;
 	}
 	
 	public Map<String, String> getHeaders() {
-		Map<String, String> headers = new HashMap<String, String>();
-		headers.put("Id", new Integer(this.hashCode()).toString());
-		headers.put("Status", res.getStatus().toString());
-		headers.put("Protocol", res.getProtocolVersion().text());
-		headers.put("Content-Type", res.headers().get(CONTENT_TYPE));
-		headers.put("Content-Length", res.headers().get(CONTENT_LENGTH));
-		
 		return headers;
 	}
 	
@@ -166,41 +154,62 @@ public class Response {
 		StringBuilder buf = new StringBuilder();
 
 		buf.append("Response" + StringUtil.NEWLINE);
-		buf.append("   Status: " + res.getStatus().toString() + StringUtil.NEWLINE);
-		buf.append("   Protocol: " + res.getProtocolVersion().text() + StringUtil.NEWLINE);
-		buf.append("   Content-Length: " + res.headers().get(CONTENT_LENGTH) + StringUtil.NEWLINE);
-		buf.append("   Content-Type: " + res.headers().get(CONTENT_TYPE) + StringUtil.NEWLINE);
+		buf.append("   Status: " + getStatus().toString() + StringUtil.NEWLINE);
+		buf.append("   Protocol: " + getProtocol() + StringUtil.NEWLINE);
+		buf.append("   Headers: " + headers.toString() + StringUtil.NEWLINE);
 		buf.append("   Content: " + StringUtil.NEWLINE);
 		
-		if (isJSON() || isXML() || isText()) {
-			buf.append(StringEscapeUtils.unescapeJava(getContent()) + StringUtil.NEWLINE);
-		} else {
-			buf.append("Cannot be displayed " + StringUtil.NEWLINE);
-		}
+		buf.append(StringEscapeUtils.unescapeJava(getContent()) + StringUtil.NEWLINE);
+		
 		return buf.toString();
 	}
 	
-	public String toJSON() {
+	public JSONObject toJSON() {
 		JSONObject responseJSON = new JSONObject();
 		responseJSON.put("status", getStatus());
-		responseJSON.put("type", getContentType());
 		responseJSON.put("protocol", getProtocol());
 		responseJSON.put("content", getContent());
-		return responseJSON.toString(2);
+		responseJSON.put("headers", getHeaders());
+		responseJSON.put("hashCode", hashCode());
+		responseJSON.put("id", id);
+		
+		return responseJSON;
 	}
 	
-	public static Response parseJSON(String json) {
-		JSONObject responseJSON = new JSONObject(json);
+	
+	public static Response parseJSON(String source) {
+		JSONObject json = new JSONObject(source);
 		
 
-		HttpResponseStatus status = HttpResponseStatus.valueOf(responseJSON.getInt("status"));
-		HttpVersion version = HttpVersion.valueOf(responseJSON.getString("protocol"));
-		ContentType type = ContentType.parse(responseJSON.getString("type"));
-		String content = responseJSON.getString("content");
+		Integer status = json.getInt("status");
+		String protocol = json.getString("protocol");
+		String content = json.getString("content");
+		Integer id = json.getInt("id");
 		
-		DefaultFullHttpResponse defaultFull = new DefaultFullHttpResponse(version, status);
-		Response response = new Response(defaultFull);
-		response.setContent(content, type);
+		JSONObject headersJSON = json.getJSONObject("headers");
+		
+		Map<String, String> headers = new HashMap<String, String>();
+		for (Object key : headersJSON.keySet()) {
+			headers.put(key.toString(), headersJSON.getString(key.toString()));
+		}
+		
+		Response response = new Response(headers, content, protocol, status);
+		response.setId(id);
+		
+		
+		return response;
+	}
+	
+	public HttpResponse getHTTPObject() {
+		HttpVersion version = HttpVersion.valueOf(protocol);
+		HttpResponseStatus status = HttpResponseStatus.valueOf(this.status);
+		DefaultFullHttpResponse response = new DefaultFullHttpResponse(version, status);
+		
+		HttpHeaders headers = response.headers();
+		
+		for (String key : this.headers.keySet()) {
+			headers.set(key, this.headers.get(key));
+		}
 		
 		return response;
 	}

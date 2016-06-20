@@ -8,7 +8,7 @@ import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 import com.hkamran.mocking.FilterManager.State;
 import com.hkamran.mocking.gui.MainPage;
 import com.hkamran.mocking.gui.UIEvent;
-import com.hkamran.mocking.rest.RestService;
+import com.hkamran.mocking.servers.BackEndServer;
 
 /**
  * Hello world!
@@ -66,7 +66,7 @@ public class Main {
 			}
 		});	
 		
-		RestService.setFilter(filter);
+		BackEndServer.setFilter("default", filter);
 		
 		
 		/**
@@ -77,7 +77,7 @@ public class Main {
 
 		log.info("Starting Service Recorder at port " + proxyPort);
 		HttpProxyServer proxy = DefaultHttpProxyServer.bootstrap().withPort(proxyPort).withFiltersSource(filter).withManInTheMiddle(new SelfSignedMitmManager()).start();
-		RestService.start();
+		BackEndServer.start(7090);
 		window.open();
 
 		proxy.stop();

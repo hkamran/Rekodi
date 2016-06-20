@@ -165,7 +165,7 @@ public class ResponsePage {
 
 		statusCodeCombo.select(statusCodeCombo.indexOf(response.getStatus().toString()));
 		protocolCombo.select(protocolCombo.indexOf(response.getProtocol().toString()));
-		contentTypeCombo.select(contentTypeCombo.indexOf(response.getContentType().toString()));
+
 		txtContent.setText(response.getContent());
 
 		btnSave.addSelectionListener(new SelectionAdapter() {
@@ -178,10 +178,6 @@ public class ResponsePage {
 				HttpResponseStatus statusCode = HttpResponseStatus.valueOf(status);
 				ContentType contentType = ContentType.parse(contentTypeCombo.getItem(contentTypeCombo.getSelectionIndex()));
 				String content = txtContent.getText();
-				
-				response.setHttpVersion(httpVersion);
-				response.setStatus(statusCode);
-				response.setContent(content, contentType);
 
 				System.out.println(response);
 				

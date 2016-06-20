@@ -15,6 +15,7 @@ import io.netty.handler.codec.http.HttpResponse;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 import org.littleshoot.proxy.ChainedProxy;
 import org.littleshoot.proxy.ChainedProxyAdapter;
 import org.littleshoot.proxy.ChainedProxyManager;
@@ -93,7 +94,7 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 						if (state == State.PROXY) {
 							//No need
 						} else if (state == State.MOCK) {
-							return sendToMock(req);
+							return sendToMock(req, watch);
 						} else if (state == State.RECORD) {
 							//No Need
 						}
@@ -148,9 +149,10 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 
 	/**
 	 * Request Handlers
+	 * @param watch 
 	 */
 	
-	public HttpResponse sendToMock(final Request request) {
+	public HttpResponse sendToMock(final Request request, StopWatch watch ) {
 		if (tape == null) {
 			return null;
 		}
@@ -160,12 +162,15 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 		if (response == null && debugger.getState()) {
 			response = debugger.analyze(request);
 		}			
-
+		watch.stop();
+		Long duration = TimeUnit.MILLISECONDS.toMillis(watch.getTime());
+		events.add(new Event(request, response, new Date(watch.getStartTime()), duration, state));
+		
 		UIEvent(request, response, 0);
 	
 		if (response != null) {
 			log.info("Mocked Response outgoing: " + response.hashCode() + " for " + request.hashCode());
-			return (HttpResponse) response.getHttpObject();
+			return (HttpResponse) response.getHTTPObject();
 		} else {
 			log.info("Mocked Response outgoing: null for " + request.hashCode());
 			return null;
@@ -259,6 +264,28 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	public int getMaximumResponseBufferSizeInBytes() {
 		return MAX_SIZE;
 	}	
+	
+	public JSONObject toJSON() {
+		JSONObject result = new JSONObject();
+		result.put("proxy", getState()); 
+		result.put("state", getRedirectState());
+		result.put("host", getHost());
+		result.put("port", getPort());
+		return result;
+	}
+	
+	public void parseJSON(String source) {
+		JSONObject json = new JSONObject(source);
+		
+		String proxyState = json.getString("state");
+		Boolean redirectState = json.getBoolean("redirect");
+		String host = json.getString("host");
+		Integer port = json.getInt("port");
+		
+		this.setState(State.valueOf(proxyState));
+		this.setRedirectInfo(host, port);
+		this.setRedirectState(redirectState);
+	}
 	
 
 }

@@ -4,6 +4,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.json.JSONObject;
+
 import com.hkamran.mocking.FilterManager.State;
 
 
@@ -22,6 +24,22 @@ public class Event {
 		
 		DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss a");
 		this.start = dateFormat.format(date);
+	}
+	
+	public JSONObject toJSON() {
+		JSONObject result = new JSONObject();
+		
+		JSONObject request = this.request.toJSON();
+		JSONObject response = this.response.toJSON();
+		
+		result.put("request", request);
+		result.put("response", response); 
+
+		result.put("start", start);
+		result.put("duration", duration);
+		result.put("state", isRecordered);
+		
+		return result;
 	}
 
 }

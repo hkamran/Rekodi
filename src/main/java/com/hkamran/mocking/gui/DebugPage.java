@@ -222,10 +222,6 @@ public class DebugPage {
 				DefaultFullHttpResponse fullRes = new DefaultFullHttpResponse(httpVersion, statusCode);
 				Response response = new Response(fullRes);
 
-				if (!isNone) {
-					response.setContent(content, ContentType.parse(contentType));
-				}
-
 				debugger.setResponse(response);
 				shell.dispose();
 
