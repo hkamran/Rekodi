@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONObject;
 
+import com.hkamran.mocking.FilterManager.State;
 import com.hkamran.mocking.util.Formatter;
 
 public class Response {
@@ -25,10 +26,12 @@ public class Response {
 	private String protocol;
 	private Integer status;
 	private String content;
+	private State state;
 	
 	private Integer id = -1;
+	private Integer parent = -1;
 	
-	public Response(DefaultFullHttpResponse res) {
+	public Response(DefaultFullHttpResponse res, State state) {
 		DefaultFullHttpResponse resCopy = (DefaultFullHttpResponse) res.copy();
 		resCopy.retain();
 		
@@ -45,14 +48,16 @@ public class Response {
 			
 			headers.put(key, value);
 		}
+		this.state = state;
 		
 	}
 	
-	public Response(Map<String, String> headers, String content, String protocol, Integer status) {
+	public Response(Map<String, String> headers, String content, String protocol, Integer status, State state) {
 		this.headers = headers;
 		this.content = content;
 		this.protocol = protocol;
 		this.status = status;
+		this.state = state;
 	}
 
 	private String parseContent(DefaultFullHttpResponse res) {
@@ -76,7 +81,11 @@ public class Response {
 	}
 
 	public Response clone() {
-		return new Response(getHeaders(), getContent(), getProtocol(), getStatus());
+		return new Response(getHeaders(), getContent(), getProtocol(), getStatus(), getState());
+	}
+	
+	public State getState() {
+		return state;
 	}
 	
 	public String getContent() {
@@ -113,6 +122,10 @@ public class Response {
 	
 	public void setProtocol(String version) {
 		this.protocol = version;
+	}
+	
+	public void setParent(Integer hashCode) {
+		this.parent = hashCode;
 	}
 	
 	public Map<String, String> getHeaders() {
@@ -172,7 +185,9 @@ public class Response {
 		responseJSON.put("headers", getHeaders());
 		responseJSON.put("hashCode", hashCode());
 		responseJSON.put("id", id);
-		
+		responseJSON.put("state", getState());
+		responseJSON.put("parent", parent);
+
 		return responseJSON;
 	}
 	
@@ -185,6 +200,8 @@ public class Response {
 		String protocol = json.getString("protocol");
 		String content = json.getString("content");
 		Integer id = json.getInt("id");
+		State state = State.valueOf(json.getString("state"));
+		Integer parent = json.getInt("parent");
 		
 		JSONObject headersJSON = json.getJSONObject("headers");
 		
@@ -193,7 +210,8 @@ public class Response {
 			headers.put(key.toString(), headersJSON.getString(key.toString()));
 		}
 		
-		Response response = new Response(headers, content, protocol, status);
+		Response response = new Response(headers, content, protocol, status, state);
+		response.setParent(parent);
 		response.setId(id);
 		
 		

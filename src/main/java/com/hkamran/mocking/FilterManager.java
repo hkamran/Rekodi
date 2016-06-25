@@ -43,7 +43,7 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	
 	public static UIEvent event;
 
-	public enum State {
+	public static enum State {
 		MOCK, PROXY, RECORD;
 	}
 
@@ -85,7 +85,7 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 				try {
 					if (httpObject instanceof DefaultFullHttpRequest) {
 						DefaultFullHttpRequest httpFullObj = (DefaultFullHttpRequest) httpObject;
-						req = new Request(httpFullObj);
+						req = new Request(httpFullObj, state);
 						
 						log.info("Request incoming: " + req.hashCode());
 						watch = new StopWatch();
@@ -111,8 +111,8 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 				try {
 					if (httpObject instanceof DefaultFullHttpResponse) {
 						DefaultFullHttpResponse httpFullObj = (DefaultFullHttpResponse) httpObject;
-						res = new Response(httpFullObj);
-						
+						res = new Response(httpFullObj, state);
+						res.setParent(req.hashCode());
 						watch.stop();
 		
 						Long duration = TimeUnit.MILLISECONDS.toMillis(watch.getTime());

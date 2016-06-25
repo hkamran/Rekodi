@@ -182,7 +182,7 @@ public class BackEndServer {
 	@POST
 	@Path("/{proxyName}/settings")
 	@Consumes({MediaType.APPLICATION_JSON})
-	public Response setSettingsPOST(@PathParam("proxyName") String proxyName,  final String json) {
+	public Response setSettings(@PathParam("proxyName") String proxyName,  final String json) {
 		log.info("Updating settings " + proxyName);
 		
 		try {
@@ -201,7 +201,7 @@ public class BackEndServer {
 	
 	@OPTIONS
 	@Path("/{proxyName}/settings")
-	public Response setSettings(@PathParam("proxyName") String proxyName) {
+	public Response getSettingsOptions(@PathParam("proxyName") String proxyName) {
 		return Response.status(200).entity("")
 				.header("Access-Control-Allow-Origin", "*")
 				.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
@@ -210,21 +210,67 @@ public class BackEndServer {
 	}
 
 	
-	@GET
+	@POST
 	@Path("/{proxyName}/tape/{requestID}")
 	@Consumes({MediaType.APPLICATION_JSON})
-	public Response setRequest(@PathParam("proxyName") String proxyName) {
-		
+	public Response setRequest(@PathParam("proxyName") String proxyName,  
+							   @PathParam("requestID") String requestID, 
+							   final String json) {
+		try {
+			Request request = Request.parseJSON(json);		
+			FilterManager filter = filters.get(proxyName);
+			filter.getTape().setRequest(requestID, request);
+			log.info("Updating request " + requestID + " on " + proxyName);
+			
+			return Response.status(200).entity(request.toJSON().toString(2))
+					.header("Access-Control-Allow-Origin", "*")
+					.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+					.allow("OPTIONS").build();				
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return Response.status(400).entity("")
+				.header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+				.allow("OPTIONS").build();					
+	}
+	
+	@OPTIONS
+	@Path("/{proxyName}/tape/{requestID}")
+	public Response getRequestOptions(@PathParam("proxyName") String proxyName) {
 		return Response.status(200).entity("")
 				.header("Access-Control-Allow-Origin", "*")
 				.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
-				.allow("OPTIONS").build();	
+				.header("Access-Control-Allow-Headers", "Content-Type, Content-Range, Content-Disposition, Content-Description")
+				.allow("OPTIONS", "POST").build();	
 	}
 	
-	@GET
+	@POST
 	@Path("/{proxyName}/tape/{requestID}/{responseID}")
 	@Consumes({MediaType.APPLICATION_JSON})
-	public Response setResponse(@PathParam("proxyName") String proxyName, String x) {
+	public Response setResponse(@PathParam("proxyName") String proxyName, 
+								@PathParam("requestID") String requestID,  
+								@PathParam("responseID") Integer responseID, 
+								final String json) {
+		
+		try {
+			com.hkamran.mocking.Response response = com.hkamran.mocking.Response.parseJSON(json);		
+			FilterManager filter = filters.get(proxyName);
+			Request request = filter.getTape().getRequest(requestID);
+			List<com.hkamran.mocking.Response> responses = filter.getTape().getResponses(request);
+			
+			responses.set(responseID, response);
+			log.info("Updating response " + responseID + " for " + requestID + " on " + proxyName);
+			
+			return Response.status(200).entity(response.toJSON().toString(2))
+					.header("Access-Control-Allow-Origin", "*")
+					.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+					.allow("OPTIONS").build();		
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		return Response.status(200).entity("")
 				.header("Access-Control-Allow-Origin", "*")
@@ -232,15 +278,43 @@ public class BackEndServer {
 				.allow("OPTIONS").build();	
 	}
 	
-	/*
-	  ______ _   _ _______ _______     __
-	 |  ____| \ | |__   __|  __ \ \   / /
-	 | |__  |  \| |  | |  | |__) \ \_/ / 
-	 |  __| | . ` |  | |  |  _  / \   /  
-	 | |____| |\  |  | |  | | \ \  | |   
-	 |______|_| \_|  |_|  |_|  \_\ |_|                              
-	 */
+	@OPTIONS
+	@Path("/{proxyName}/tape/{requestID}/{responseID}")
+	public Response getResponseOptions(@PathParam("proxyName") String proxyName) {
+		return Response.status(200).entity("")
+				.header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+				.header("Access-Control-Allow-Headers", "Content-Type, Content-Range, Content-Disposition, Content-Description")
+				.allow("OPTIONS", "POST").build();	
+	}
 	
+	@POST
+	@Path("/{proxyName}/tape")
+	@Consumes({MediaType.APPLICATION_JSON})
+	public Response setTape(@PathParam("proxyName") String proxyName,  
+							final String json) {
+		try {
+			FilterManager filter = filters.get(proxyName);
+			filter.setTape(Tape.parseJSON(json));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return Response.status(400).entity("")
+				.header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+				.allow("OPTIONS").build();					
+	}
+	
+	@OPTIONS
+	@Path("/{proxyName}/tape")
+	public Response getTapeOptions(@PathParam("proxyName") String proxyName) {
+		return Response.status(200).entity("")
+				.header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+				.header("Access-Control-Allow-Headers", "Content-Type, Content-Range, Content-Disposition, Content-Description")
+				.allow("OPTIONS", "POST").build();	
+	}
 	
 	
 	public static void start(Integer port) {

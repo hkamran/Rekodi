@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import com.hkamran.mocking.Debugger;
+import com.hkamran.mocking.FilterManager.State;
 import com.hkamran.mocking.Response;
 
 public class DebugPage {
@@ -220,7 +221,7 @@ public class DebugPage {
 				String content = contentText.getText();
 
 				DefaultFullHttpResponse fullRes = new DefaultFullHttpResponse(httpVersion, statusCode);
-				Response response = new Response(fullRes);
+				Response response = new Response(fullRes, State.PROXY);
 
 				debugger.setResponse(response);
 				shell.dispose();

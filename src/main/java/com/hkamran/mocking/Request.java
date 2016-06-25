@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 
 import org.json.JSONObject;
 
+import com.hkamran.mocking.FilterManager.State;
 import com.hkamran.mocking.util.Formatter;
 
 public class Request {
@@ -30,10 +31,11 @@ public class Request {
 	private String protocol = "";
 	private String method = "";
 	private String uri = "";
+	private State state;
 	
 	public Integer counter = 0;
 
-	public Request(DefaultFullHttpRequest req) {
+	public Request(DefaultFullHttpRequest req, State state) {
 		DefaultFullHttpRequest reqCopy = (DefaultFullHttpRequest) req.copy();
 		reqCopy.retain();
 		
@@ -51,17 +53,18 @@ public class Request {
 		protocol = reqCopy.getProtocolVersion().toString();
 		method = reqCopy.getMethod().toString();
 		uri = reqCopy.getUri();
-		
+		this.state = state;
 		
 		System.out.println(toJSON());
 	}
 	
-	public Request(Map<String, String> headers, String content, String protocol, String method, String uri) {
+	public Request(Map<String, String> headers, String content, String protocol, String method, String uri, State state) {
 		this.content = content;
 		this.protocol = protocol;
 		this.method = method;
 		this.uri = uri;
 		this.headers = headers;
+		this.state = state;
 	}
 
 	private String parseContent(DefaultFullHttpRequest req) {
@@ -93,7 +96,11 @@ public class Request {
 	}
 
 	public Request clone() {
-		return new Request(getHeaders(), getContent(), getProtocol(), getMethod(), getURI());
+		return new Request(getHeaders(), getContent(), getProtocol(), getMethod(), getURI(), getState());
+	}
+	
+	public State getState() {
+		return state;
 	}
 
 	public String getMethod() {
@@ -210,39 +217,35 @@ public class Request {
 		json.put("matchString", this.matchedString);
 		json.put("id", this.hashCode());
 		json.put("headers", this.headers);
+		json.put("state", this.state);
 		
 		return json;
 	}
 	
 	public static Request parseJSON(String source) {
-		try {
-			JSONObject json = new JSONObject(source);
-			System.out.println(json);
-			String uri = json.getString("uri");
-			String protocol = json.getString("protocol");
-			String method = json.getString("method");
-			String content = json.getString("content");
-			
-			String matchType = json.getString("matchType");
-			String matchString = json.getString("matchString");
-			
-			JSONObject headersJSON = json.getJSONObject("headers");
-			
-			Map<String, String> headers = new HashMap<String, String>();
-			for (Object key : headersJSON.keySet()) {
-				headers.put(key.toString(), headersJSON.getString(key.toString()));
-			}
-			
-			Request request = new Request(headers, content, protocol, method, uri);
-			request.setMatchType(MATCHTYPE.valueOf(matchType));
-			request.setMatchString(matchString);
-			
-			return request;
-			
-		} catch (Exception e) {
-			e.printStackTrace();
+		JSONObject json = new JSONObject(source);
+
+		String uri = json.getString("uri");
+		String protocol = json.getString("protocol");
+		String method = json.getString("method");
+		String content = json.getString("content");
+		
+		String matchType = json.getString("matchType");
+		String matchString = json.getString("matchString");
+		String state = json.getString("state");
+		
+		JSONObject headersJSON = json.getJSONObject("headers");
+		
+		Map<String, String> headers = new HashMap<String, String>();
+		for (Object key : headersJSON.keySet()) {
+			headers.put(key.toString(), headersJSON.getString(key.toString()));
 		}
-		return null;
+		
+		Request request = new Request(headers, content, protocol, method, uri, State.valueOf(state));
+		request.setMatchType(MATCHTYPE.valueOf(matchType));
+		request.setMatchString(matchString);
+		
+		return request;
 	}
 
 	

@@ -82,6 +82,22 @@ public class Tape {
 		}
 		return null;
 	}
+	
+	public void setRequest(String hashCode, Request request) {
+		Request original = getRequest(hashCode);
+		if (original == null) {
+			throw new RuntimeException("Unable to find request " + hashCode);
+		}
+		List<Response> responses = getResponses(original);
+		for (Response response : responses) {
+			response.setParent(request.hashCode());
+		}
+		
+		remove(original);
+		this.put(request, responses);
+		
+	}
+
 
 	public void remove(Request request) {
 		tape.remove(request);
@@ -128,7 +144,7 @@ public class Tape {
 	public List<Response> getResponses(Request request) {
 		return tape.get(request);
 	}
-
+	
 	public List<Response> getResponses(String hashCode) {
 		Request request = getRequest(hashCode);
 		return tape.get(request);
@@ -167,7 +183,7 @@ public class Tape {
 		}
 	}
 	
-	public void parseJSON(String source) {
+	public static Tape parseJSON(String source) {
 		Tape tape = new Tape();
 		JSONObject mockedCalls = new JSONObject(source);
 
@@ -190,7 +206,7 @@ public class Tape {
 			}
 		}
 		
-		this.tape = tape.tape;
+		return tape;
 	}
 
 	public static Tape load(String path) throws IOException {

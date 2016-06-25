@@ -14,13 +14,13 @@ public class Event {
 	public Request request;
 	public String start;
 	public Long duration;
-	public String isRecordered;
+	public String state;
 
 	public Event(Request req, Response res, Date date, Long duration, State state) {
 		this.request = req;
 		this.response = res;
 		this.duration = duration;
-		this.isRecordered = state.toString();
+		this.state = state.toString();
 		
 		DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss a");
 		this.start = dateFormat.format(date);
@@ -37,7 +37,7 @@ public class Event {
 
 		result.put("start", start);
 		result.put("duration", duration);
-		result.put("state", isRecordered);
+		result.put("state", state);
 		
 		return result;
 	}
