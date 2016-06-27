@@ -9,6 +9,7 @@ import com.hkamran.mocking.FilterManager.State;
 import com.hkamran.mocking.gui.MainPage;
 import com.hkamran.mocking.gui.UIEvent;
 import com.hkamran.mocking.servers.BackEndServer;
+import com.hkamran.mocking.servers.FrontEndServer;
 
 /**
  * Hello world!
@@ -78,8 +79,8 @@ public class Main {
 		log.info("Starting Service Recorder at port " + proxyPort);
 		HttpProxyServer proxy = DefaultHttpProxyServer.bootstrap().withPort(proxyPort).withFiltersSource(filter).withManInTheMiddle(new SelfSignedMitmManager()).start();
 		BackEndServer.start(7090);
+		FrontEndServer.start(8090);
 		window.open();
-
 		proxy.stop();
 	}
 }
