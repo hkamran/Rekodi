@@ -27,6 +27,7 @@ import com.hkamran.mocking.gui.UIEvent;
 
 public class FilterManager extends HttpFiltersSourceAdapter implements ChainedProxyManager {
 
+	private static final int EVENT_MAX_SIZE = 100;
 	private final static Logger log = Logger.getLogger(FilterManager.class);
 	private static final int MAX_SIZE = 8388608;
 	
@@ -114,10 +115,8 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 						res = new Response(httpFullObj, state);
 						res.setParent(req.hashCode());
 						watch.stop();
-		
-						Long duration = TimeUnit.MILLISECONDS.toMillis(watch.getTime());
-						UIEvent(req, res, duration);
-						events.add(new Event(req, res, new Date(watch.getStartTime()), duration, state));
+	
+						addEvent(res, req, watch);
 
 						log.info("Response outgoing: " + res.hashCode() + " for " + req.hashCode());
 						
@@ -137,7 +136,18 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 					return null;
 				}
 			}
+
+
 		};
+	}
+	
+	private void addEvent(Response res, Request req, StopWatch watch) {
+		Long duration = TimeUnit.MILLISECONDS.toMillis(watch.getTime());
+		if (events.size() > EVENT_MAX_SIZE) {
+			events = new ArrayList<Event>();
+		}
+		
+		events.add(new Event(req, res, new Date(watch.getStartTime()), duration, state));
 	}
 	
 	
@@ -163,9 +173,7 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 			response = debugger.analyze(request);
 		}			
 		watch.stop();
-		Long duration = TimeUnit.MILLISECONDS.toMillis(watch.getTime());
-		events.add(new Event(request, response, new Date(watch.getStartTime()), duration, state));
-		
+		addEvent(response, request, watch);
 		UIEvent(request, response, 0);
 	
 		if (response != null) {
