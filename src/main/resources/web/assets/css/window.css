@@ -40,6 +40,11 @@
     height: 100%;
 }
 
+.box .header .item.right:hover {
+    background: #e1e1e1;
+    cursor: pointer;
+}
+
 .box .body {
     box-sizing: border-box;
     bottom: 0px;
@@ -79,7 +84,7 @@
     height: auto;
     display: table-row;
     position: absolute;
-    top: 29px;
+    top: 28px;
     bottom: 0px;
     width: 100%;
     overflow: auto;
@@ -108,6 +113,14 @@
     min-height: inherit;
 }
 
+.properties .wrapper {
+    height: 100%;
+    width: 100%;
+    white-space: normal;
+    padding: 10px;
+    padding-left: 12px;
+    box-sizing: border-box;
+}
 
 .properties ul {
     text-align: left;
@@ -119,12 +132,43 @@
 
 }
 
-.properties ul li {
+.properties .value .name {
+    min-width: 100px;
+    height: 14px;
     display: block;
+}
+
+.properties ul li {
+    display: inline-block;
     clear: left;
     float: left;
     margin-bottom: 1px;
+    white-space: nowrap;
+}
 
+.properties ul li .properties.close {
+    display: block;
+    position: absolute;
+    left: 4px;
+    width: 15px;
+    height: 20px;
+    cursor: pointer;
+    padding-top: 1px;
+}
+
+.properties.close:hover i {
+    display: block;
+    color: #cd3737;
+}
+
+.properties.close i {
+    display: none;
+}
+
+.properties.add {
+    cursor: copy;
+    height: 10px;
+    width: 200px;
 }
 
 .properties .title {
@@ -138,10 +182,11 @@
 }
 
 .properties .value {
-    float: left;
     font-family: Consolas, Arial, sans-serif;
     font-size: 9pt;
-
+    display: inline-block;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
 }
 
 
@@ -150,8 +195,9 @@
     height: 52px;
     padding: 10px;
     box-sizing: border-box;
-    background: #fff;
-    border-bottom: 1px solid #fff;
+    background: #fafafa none repeat scroll 0 0;
+    border-bottom: 1px solid #e3e3e3;
+
     position: static !important;
     left: 0px;
 }

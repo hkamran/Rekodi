@@ -1,6 +1,8 @@
 package com.hkamran.mocking;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
@@ -221,9 +223,12 @@ public class Response {
 	public HttpResponse getHTTPObject() {
 		HttpVersion version = HttpVersion.valueOf(protocol);
 		HttpResponseStatus status = HttpResponseStatus.valueOf(this.status);
-		DefaultFullHttpResponse response = new DefaultFullHttpResponse(version, status);
+		System.out.println(this.content);
+		ByteBuf content = Unpooled.wrappedBuffer(this.content.getBytes());
+		DefaultFullHttpResponse response = new DefaultFullHttpResponse(version, status, content);
 		
 		HttpHeaders headers = response.headers();
+
 		
 		for (String key : this.headers.keySet()) {
 			headers.set(key, this.headers.get(key));

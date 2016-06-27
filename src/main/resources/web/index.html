@@ -1,352 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="height: 100%;">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <script src="libs/react/react.js"></script>
+    <script src="libs/react/react-dom.js"></script>
+    <script src="libs/babel/js/browser.min.js"></script>
+
+    <link rel="stylesheet" href="./libs/codemirror/css/codemirror.css"/>
+    <link rel="stylesheet" href="./libs/tiptop/css/tiptop.css"/>
+
+    <link rel="stylesheet" href="./assets/css/main.css"/>
     <link rel="stylesheet" href="./assets/css/tables.css"/>
     <link rel="stylesheet" href="./assets/css/window.css"/>
     <link rel="stylesheet" href="./assets/css/tree.css"/>
-    <link rel="stylesheet" href="./assets/css/codemirror.css"/>
-    <link rel="stylesheet" href="./assets/css/tiptop.css"/>
-    <style>
-        html, body {
-            margin: 0px;
-            padding: 0px;
-            font-family: Helvetica, Arial, sans-serif ;
-            font-style: normal;
-            font-weight: normal;
-        }
-
-        .breaker {
-            background: #454545 none repeat scroll 0 0;
-            border-top: 1px solid #585858;
-            height: 3px;
-            border-bottom: 1px solid #353535;
-        }
-
-        .main {
-            top: 65px;
-            left: 0px;
-            right: 0px;
-            bottom: 0px;
-            position: absolute;
-            background: #dbdbdb;
-        }
-
-        .main .container {
-
-            padding: 10px;
-            position: absolute;
-            right: 0;
-            top: 0;
-            left: 61px;
-            bottom: 0px;
-            border-top: 1px solid #fff;
-            border-left: 1px solid #fff;
-        }
-
-        .main .content {
-            background: #dbdbdb;
-            height: 100%;
-            width: 100%;
-        }
-
-        .splitter.vertical {
-            height: 10px;
-            cursor: row-resize;
-        }
-
-        .splitter.vertical.grabber {
-            height: 100%;
-            background: #a1a1a1;
-            width: 70px;
-            margin: 0 auto;
-        }
-
-        .splitter.horizontal {
-            width: 10px;
-            height: 100%;
-            cursor: col-resize;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            float: left;
-            min-height: 88px;
-        }
-
-        .splitter.horizontal.grabber {
-            flex: 0 1 70px;
-            background: #a1a1a1;
-            width: 100%;
-        }
-
-        .subnav {
-            width: 60px;
-            height: 100%;
-            float: left;
-            background: #454545;
-            border-right: 1px solid #343434;
-        }
-
-        .subnav ul {
-            text-align: left;
-            list-style: none;
-            margin: 0px;
-            padding: 0px;
-        }
-
-        .subnav ul li {
-
-            height: 60px;
-            background: #4b4b4b;
-            border-top: 1px solid #676767;
-            border-left: 1px solid #575757;
-            line-height: 55px;
-            font-size: 17pt;
-            box-sizing: border-box;
-
-            border-right: 1px solid #404040;
-            border-bottom: 1px solid #3b3b3b;
-            cursor:pointer;
-            text-align: center;
-            color: #c5c5c5;
-
-        }
-
-        .subnav ul li:hover {
-            background: #565656;
-        }
-
-        .subnav .resizer {
-            height: 10px;
-            background: #353535;
-            border: 0px;
-            border-right: 1px solid #2f2f2f;
-            background-image: url("./assets/images/subnav_arrow_back.png");
-            background-repeat: no-repeat;
-            background-position: 94% 37%;
-        }
-
-        .CodeMirror {
-            height: 100%;
-            width: 100%;
-        }
-
-    </style>
+    <link rel="stylesheet" href="./assets/css/subnav.css"/>
+    <link rel="stylesheet" href="./assets/css/header.css"/>
+    <link rel="stylesheet" href="//cdn.materialdesignicons.com/1.6.50/css/materialdesignicons.min.css">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jquery-editable/css/jquery-editable.css" rel="stylesheet"/>
 </head>
-<body>
-    <div class="header" style="height: 60px;">
-
-    </div>
-    <div class="breaker"></div>
-    <div class="main">
-        <div class="subnav">
-            <ul>
-                <li class="resizer"></li>
-                <!-- 82ba45 (green) #ba403f (red) -->
-                <li class="subnav button" title="Recorder State"><i class="fa fa-circle" aria-hidden="true" ></i></li>
-                <li class="subnav button" title="Proxy Settings"><i class="fa fa-toggle-on" aria-hidden="true"></i></li>
-                <li class="subnav button" title="Import Tape"><i class="fa fa-download" aria-hidden="true"></i></li>
-                <li class="subnav button" title="Export Tape"><i class="fa fa-upload" aria-hidden="true"></i></li>
-                <li class="subnav button" title="Settings"><i class="fa fa-cog " aria-hidden="true"></i></li>
-            </ul>
-        </div>
-        <div class="container">
-            <div class="content ">
-                <div id="analysisContainer" style="height: calc(50% - 5px)">
-                    <!-- Tape Box -->
-                    <div id="tapeContainer" class="box" >
-                        <div class="header">
-                            <div class="item left border">Tape</div>
-                            <div class="item right border"><i class="fa fa-file-o" aria-hidden="true"></i></div>
-                        </div>
-                        <div class="body">
-                            <div  class="column grow width">
-
-                                <div class="search container"style="">
-                                    <div class="search border" style="">
-                                        <div class="search icon wrapper">
-                                            <i aria-hidden="true" class="fa fa-search fa-lg"></i>
-                                        </div>
-                                        <div class="search input wrapper">
-                                            <input style="width: calc(100% - 44px); border: 0px;" type="text" maxlength="250" autocomplete="off" placeholder="Search" name="q" id="search_terms">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="content" style="padding-top: 10px; top: 52px;">
-                                    <div class="tree" >
-                                        <ul class="incoming">
-                                            <li>
-                                                <span><i class="icon-minus-sign "></i>Request: 4512</span>
-
-                                                <ul>
-                                                    <li class="message">
-                                                        <span><i class="icon-leaf"></i>Response: 0</span>
-                                                    </li>
-                                                    <li class="message">
-                                                        <span><i class="icon-leaf"></i>Response: 1</span>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                        </ul>
-                                        <ul class="incoming">
-                                            <li>
-                                                <span><i class="icon-minus-sign "></i>Request: 4512</span>
-
-                                                <ul>
-                                                    <li class="message">
-                                                        <span><i class="icon-leaf"></i>Response: 0</span>
-                                                    </li>
-                                                    <li class="message">
-                                                        <span><i class="icon-leaf"></i>Response: 1</span>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <div id="analysisSplitter" class="splitter horizontal">
-                        <div class="splitter horizontal grabber"></div>
-                    </div>
-
-                    <!-- Message Box -->
-                    <div id="messageContainer" class="box">
-                        <div class="header">
-                            <div class="item left border">Message</div>
-
-                            <div class="item right border"><i class="fa fa-code" aria-hidden="true"></i></div>
-                            <div class="item right border"><i class="fa fa-floppy-o" aria-hidden="true"></i></div>
-
-                        </div>
-                        <div class="body min" style=" ">
-                            <div id="headerContainer" class="column" style="width: calc(50% - 0.5px)">
-                                <div class="header">
-                                    Header
-                                </div>
-                                <div class="properties content">
-                                    <div  style="height: 100%; width: 100%; white-space: normal;  padding: 10px;  box-sizing: border-box;">
-                                        <ul>
-                                            <li>
-                                                <div class="properties title">Request URL:</div>
-                                                <div class="properties value">http://www.google.com</div>
-                                            </li>
-                                            <li>
-                                                <div class="title">Request Method:</div>
-                                                <div class="value">POST</div>
-                                            </li>
-                                        </ul>
-                                     </div>
-                                </div>
-                            </div>
-                            <div id="messageSplitter" class="column splitter horizontal">
-                                <div id="messageSplitterClickBox" style="width: 18px; position: relative; height: 100%; left: -9px; z-index: 999;"></div>
-                            </div>
-                            <div id="contentContainer" class="column" style="width: calc(50% - 0.5px)">
-                                <div class="header">
-                                    Content
-                                </div>
-                                <div class="content">
-                                    <div style="height: 100%; width: 100%; white-space: normal; word-break: break-all; box-sizing: border-box;">
-                                        <textarea id="content" name="content" style="height: 99%; width: 100%; box-sizing: border-box; border: 0px">
-
-                                        </textarea>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                        <div class="footer" style=""></div>
-                    </div>
-                </div>
-                <div id="contentSplitter">
-                    <div class="splitter vertical">
-                        <div class="splitter vertical grabber"></div>
-                    </div>
-                </div>
-                <div id="eventsContainer" style="height: calc(50% - 5px)" class="box">
-                    <div class="header">
-                        <div class="item left border">Events</div>
-                        <div class="item right border"><i class="fa fa-eraser" aria-hidden="true"></i></div>
-                    </div>
-                    <div class="body">
-                        <div  class="column grow width">
-                            <div class="content max">
-                                <table cellpadding="8" cellspacing="0" style="height: 100%">
-                                    <tr>
-                                        <th style="width: 1%">Time</th>
-                                        <th style="width: 50%">Description</th>
-                                        <th style="width: 25%">Request</th>
-                                        <th style="width: 25%">Response</th>
-                                        <th style="width: 1%">Duration</th>
-                                    </tr>
-                                    <tr>
-                                        <td>Jill</td>
-                                        <td>Smith</td>
-                                        <td>50</td>
-                                        <td>Smith</td>
-                                        <td>50</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Eve</td>
-                                        <td>Jackson</td>
-                                        <td>94</td>
-                                        <td>Jackson</td>
-                                        <td>94</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Jill</td>
-                                        <td>Smith</td>
-                                        <td>50</td>
-                                        <td>Smith</td>
-                                        <td>50</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Eve</td>
-                                        <td>Jackson</td>
-                                        <td>94</td>
-                                        <td>Jackson</td>
-                                        <td>94</td>
-                                    </tr>
-                                    <tr style="height: 100%">
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<body style="height: 100%;">
+    <div id="main" class="grow height width" ></div>
 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script src="./assets/javascript/split.js"></script>
-    <script src="./assets/javascript/tree.js"></script>
-    <script src="./assets/javascript/fakeScroll.js"></script>
-    <script src="./assets/javascript/tiptop.js"></script>
+    <script src="http://www.appelsiini.net/download/jquery.jeditable.mini.js"></script>
 
-    <script src="./assets/javascript/codemirror/codemirror.js"></script>
-    <script src="./assets/javascript/codemirror/edit/matchbrackets.js"></script>
-    <script src="./assets/javascript/codemirror/edit/continuecomment.js"></script>
-    <script src="./assets/javascript/codemirror/edit/comment.js"></script>
 
-    <script src="./assets/javascript/codemirror/modes/javascript.js"></script>
-    <script src="./assets/javascript/codemirror/modes/xml.js"></script>
-    <script src="./assets/javascript/codemirror/modes/css.js"></script>
-    <script src="./assets/javascript/codemirror/modes/htmlmixed.js"></script>
-    <script src="./assets/javascript/codemirror/modes/overlay.js"></script>
+    <script src="./assets/js/tree.js"></script>
+
+    <script src="./libs/split/js/split.js"></script>
+    <script src="./libs/tiptop/js/tiptop.js"></script>
+
+    <script src="./libs/codemirror/js/codemirror.js"></script>
+    <script src="./libs/codemirror/js/edit/matchbrackets.js"></script>
+    <script src="./libs/codemirror/js/edit/continuecomment.js"></script>
+    <script src="./libs/codemirror/js/edit/comment.js"></script>
+    <script src="./libs/codemirror/js/modes/javascript.js"></script>
+    <script src="./libs/codemirror/js/modes/xml.js"></script>
+    <script src="./libs/codemirror/js/modes/css.js"></script>
+    <script src="./libs/codemirror/js/modes/htmlmixed.js"></script>
+    <script src="./libs/codemirror/js/modes/overlay.js"></script>
 
     <script src="https://use.fontawesome.com/6cf2acf3bb.js"></script>
+
+    <script src="app.js"></script>
+
 
     <script>
 
@@ -371,37 +69,17 @@
             sizes: [25, 75],
             minSize: 200,
             gutterElem: document.getElementById("analysisSplitter"),
-
-
         });
 
-        var mixedMode = {
-            name: "htmlmixed",
-            scriptTypes: [{matches: /\/x-handlebars-template|\/x-mustache/i,
-                mode: null},
-                {matches: /(text|application)\/(x-)?vb(a|script)/i,
-                    mode: "vbscript"}]
-        };
 
-        CodeMirror.defineMode("xmlAndJsonMode", function(config, parserConfig) {
-            return CodeMirror.overlayMode(CodeMirror.getMode(config, "application/ld+json"), CodeMirror.getMode(config, "application/xml"));
-        });
 
-        var editor = CodeMirror.fromTextArea(document.getElementById("content"), {
-            matchBrackets: true,
-            autoCloseBrackets: true,
 
-            lineWrapping: false,
-            lineNumbers: true,
-            mode: "xmlAndJsonMode",
-            fixedGutter: true
-        });
 
-    </script>
-    <script>
         $(document).ready(function(){
             $('.subnav.button').tipTop();
+
         });
+
     </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 .tree {
     font-size: 9pt;
     color: #696969;
-    margin-left: 15px;
+    margin-left: 5%;
 }
 
 .tree .incoming {
@@ -34,20 +34,47 @@
     top:25px;
     width:25px
 }
-.tree li span {
-    -moz-border-radius:5px;
-    -webkit-border-radius:5px;
+
+.tree li div {
     background: #f4f4f4;
     border: 1px solid #c6c2c9;
+    display: inline-block;
+    box-sizing: border-box;
+}
 
+.tree li span {
     display:inline-block;
-    padding:5px 8px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-right: 8px;
 
     text-decoration:none
 }
-.tree li.parent_li>span {
-    cursor:pointer
+
+.tree li.parent_li >div {
+    cursor:pointer;
 }
+
+
+.tree li.parent_li >div:hover {
+    background: #e4f4de;
+    border: 1px solid #c4dac0;
+}
+
+.tree li.parent_li >ul >li div {
+    cursor:pointer;
+}
+
+.tree li.parent_li >ul >li div:hover {
+    background: #e4f4de;
+    border: 1px solid #c4dac0;
+}
+
+.tree li.parent_li >div > i:hover {
+    color: #91a18e;
+
+}
+
 .tree>ul>li::before, .tree>ul>li::after {
     border:0
 }

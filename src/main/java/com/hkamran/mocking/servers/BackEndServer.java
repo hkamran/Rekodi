@@ -58,7 +58,7 @@ public class BackEndServer {
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getEvents(@PathParam("proxyName") String proxyName) {
 		
-		log.info("Requesting events for " + proxyName);
+		//log.info("Requesting events for " + proxyName);
 		FilterManager filter = filters.get(proxyName);
 		List<Event> events = filter.getEvents();
 		
@@ -296,6 +296,11 @@ public class BackEndServer {
 		try {
 			FilterManager filter = filters.get(proxyName);
 			filter.setTape(Tape.parseJSON(json));
+
+			return Response.status(200).entity(filter.getTape().toJSON().toString(2))
+					.header("Access-Control-Allow-Origin", "*")
+					.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+					.allow("OPTIONS").build();		
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -303,7 +308,7 @@ public class BackEndServer {
 		return Response.status(400).entity("")
 				.header("Access-Control-Allow-Origin", "*")
 				.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
-				.allow("OPTIONS").build();					
+				.allow("OPTIONS").build();			
 	}
 	
 	@OPTIONS

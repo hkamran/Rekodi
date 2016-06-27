@@ -341,9 +341,7 @@
                     size = options.sizes[i] + '%'
                 }
             }
-            console.log(el)
-            console.log(dimension);
-            console.log(size);
+
             el.style[dimension] = size
 
             if (i > 0) {

@@ -172,17 +172,6 @@ public class Tape {
 		return mockedCalls;
 	}
 	
-	public void export(String path) throws IOException {
-		try {
-			File file = new File(path);
-			FileUtils.writeByteArrayToFile(file, toJSON().toString(4).getBytes());
-			log.info("Exported tape " + tape.hashCode() + " to " + path);
-		} catch (Exception e) {
-			log.info("Unable to export tape due to " + e.getMessage());
-			e.printStackTrace();
-		}
-	}
-	
 	public static Tape parseJSON(String source) {
 		Tape tape = new Tape();
 		JSONObject mockedCalls = new JSONObject(source);
@@ -194,8 +183,7 @@ public class Tape {
 			JSONObject mockedCall = mockedCalls.getJSONObject(hashCode);
 
 
-			Request request = Request.parseJSON(mockedCall.toString());
-
+			Request request = Request.parseJSON(mockedCall.getJSONObject("request").toString());
 			JSONObject responsesJSON = mockedCall.getJSONObject("responses");
 			Integer length = responsesJSON.length();
 
@@ -208,6 +196,19 @@ public class Tape {
 		
 		return tape;
 	}
+
+	
+	public void export(String path) throws IOException {
+		try {
+			File file = new File(path);
+			FileUtils.writeByteArrayToFile(file, toJSON().toString(4).getBytes());
+			log.info("Exported tape " + tape.hashCode() + " to " + path);
+		} catch (Exception e) {
+			log.info("Unable to export tape due to " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+	
 
 	public static Tape load(String path) throws IOException {
 		try {
