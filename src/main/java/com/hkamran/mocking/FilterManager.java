@@ -1,17 +1,17 @@
 package com.hkamran.mocking;
 
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpObject;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
-
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpObject;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
@@ -23,8 +23,6 @@ import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersAdapter;
 import org.littleshoot.proxy.HttpFiltersSourceAdapter;
 
-import com.hkamran.mocking.gui.UIEvent;
-
 public class FilterManager extends HttpFiltersSourceAdapter implements ChainedProxyManager {
 
 	private static final int EVENT_MAX_SIZE = 100;
@@ -34,7 +32,6 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	private State state = State.PROXY;
 	private Tape tape;
 	private Recorder recorder;
-	private Debugger debugger;
 	
 	public String redirectHost;
 	public Integer redirectPort;
@@ -42,15 +39,11 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	
 	private List<Event> events = new ArrayList<Event>();
 	
-	public static UIEvent event;
-
 	public static enum State {
 		MOCK, PROXY, RECORD;
 	}
 
 	public FilterManager() {
-		
-		debugger = new Debugger();
 		tape = new Tape();
 		recorder = new Recorder(tape);
 	}
@@ -149,13 +142,7 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 		
 		events.add(new Event(req, res, new Date(watch.getStartTime()), duration, state));
 	}
-	
-	
-	public void UIEvent(Request request, Response response, long l) {
-		if (event != null) {
-			event.event(request, response, l);
-		}
-	}
+
 
 	/**
 	 * Request Handlers
@@ -169,12 +156,8 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 
 		Response response = tape.getResponse(request);
 		
-		if (response == null && debugger.getState()) {
-			response = debugger.analyze(request);
-		}			
 		watch.stop();
 		addEvent(response, request, watch);
-		UIEvent(request, response, 0);
 	
 		if (response != null) {
 			log.info("Mocked Response outgoing: " + response.hashCode() + " for " + request.hashCode());
@@ -238,10 +221,6 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	
 	public State getState() {
 		return state;
-	}
-	
-	public Debugger getDebugger() {
-		return debugger;
 	}
 	
 	public List<Event> getEvents() {

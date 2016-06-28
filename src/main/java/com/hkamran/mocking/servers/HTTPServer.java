@@ -17,7 +17,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -30,14 +33,18 @@ import com.hkamran.mocking.FilterManager;
 import com.hkamran.mocking.Request;
 import com.hkamran.mocking.Tape;
 
-@Path("/rest")
-public class BackEndServer {
+@Path("/")
+public class HTTPServer {
 
-	private final static Logger log = Logger.getLogger(BackEndServer.class);
+	private final static Logger log = Logger.getLogger(HTTPServer.class);
 	private static Map<String, FilterManager> filters = new HashMap<String, FilterManager>();
 
-	public static void setFilter(String name, FilterManager filter) {
+	public void addFilter(String name, FilterManager filter) {
 		filters.put(name, filter);
+	}
+	
+	public Map<String, FilterManager> getFilters() {
+		return filters;
 	}
 	
 	/*
@@ -322,24 +329,41 @@ public class BackEndServer {
 	}
 	
 	
-	public static void start(Integer port) {
-		log.info("Starting service RESTful at port " + port);
+	public void start(Integer port) {
+		log.info("Starting HTTP Server at " + port);
 		
+		//Set Jersey Classes
 		ResourceConfig config = new ResourceConfig();
 		Set<Class<?>> s = new HashSet<Class<?>>();
-        s.add(BackEndServer.class);
-        
+        s.add(HTTPServer.class);
 		config.registerClasses(s);
+		
 		ServletHolder jerseyServlet = new ServletHolder(new ServletContainer(config));
+		
+		//Create Jersey Handler (function is to handle REST)
 		Server server = new Server(port);
-		ServletContextHandler context = new ServletContextHandler(server, "/");
-		context.addServlet(jerseyServlet, "/*");
+		ServletContextHandler restHandler = new ServletContextHandler(server, "/rest");
+		restHandler.addServlet(jerseyServlet, "/*");
+
+		//Create Static Handler (Function is to serve HTML/JS/CSS
+	    ResourceHandler staticHandler = new ResourceHandler();
+	    staticHandler.setWelcomeFiles(new String[]{ "index.html" });
+	    String dir = HTTPServer.class.getClassLoader().getResource("web").toExternalForm();
+	    staticHandler.setResourceBase(dir);
+
+	    HandlerList handlers = new HandlerList();
+	    handlers.setHandlers(new Handler[] { restHandler, staticHandler });
+				
+	    server.setHandler(handlers);
+
 		try {
-			server.start();
-
-		} catch (Exception e) {
-
-		}
+            server.start();
+            server.join();
+        } catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+        	server.destroy();
+        }
 	}
 	
   

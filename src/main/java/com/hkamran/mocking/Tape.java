@@ -1,11 +1,5 @@
 package com.hkamran.mocking;
 
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,20 +10,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.entity.ContentType;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.hkamran.mocking.Request.MATCHTYPE;
-import com.hkamran.mocking.gui.UIEvent;
 
 public class Tape {
 
 	private final static Logger log = Logger.getLogger(Tape.class);
 	private Map<Request, List<Response>> tape = Collections.synchronizedMap(new HashMap<Request, List<Response>>());
-	
-	public static UIEvent event;
 	
 	public static class Constants {
 		public static final String MATCHED_STRING = "matchedString";
@@ -51,7 +41,6 @@ public class Tape {
 		response.setId(responses.size());
 		responses.add(response);
 
-		updateTreeUI();
 	}
 
 	public void put(Request request, List<Response> responses) {
@@ -60,15 +49,9 @@ public class Tape {
 		} else {
 			tape.put(request, responses);
 		}
-		updateTreeUI();
-	}
 
-	private void updateTreeUI() {
-		if (event != null) {
-			event.event(this);
-		}
 	}
-
+	
 	public List<Request> getRequests() {
 		return new ArrayList<Request>(tape.keySet());
 	}
@@ -148,10 +131,6 @@ public class Tape {
 	public List<Response> getResponses(String hashCode) {
 		Request request = getRequest(hashCode);
 		return tape.get(request);
-	}
-
-	public static void setUIEventHandler(UIEvent e) {
-		Tape.event = e;
 	}
 
 	public JSONObject toJSON() {
