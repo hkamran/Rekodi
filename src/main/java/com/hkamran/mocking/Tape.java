@@ -195,7 +195,7 @@ public class Tape {
 
 			File file = new File(path);
 			String state = FileUtils.readFileToString(file);
-			tape.parseJSON(state);
+			Tape.parseJSON(state);
 			
 			log.info("Loaded tape " + tape.hashCode() + " from " + path);
 			return tape;
