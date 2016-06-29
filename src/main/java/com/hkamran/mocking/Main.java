@@ -1,5 +1,7 @@
 package com.hkamran.mocking;
 
+import javax.servlet.ServletException;
+
 import org.apache.log4j.Logger;
 
 import com.hkamran.mocking.FilterManager.State;
@@ -14,7 +16,7 @@ public class Main {
 
 	private final static Logger log = Logger.getLogger(Main.class);
 
-	public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) throws Exception {
 		
 		/**
 		 * Setup Filter
