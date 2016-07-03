@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import com.hkamran.mocking.FilterManager.State;
 import com.hkamran.mocking.servers.HTTPServer;
 import com.hkamran.mocking.servers.ProxyServer;
+import com.hkamran.mocking.websockets.EventSocket;
 
 /**
  * Hello world!
@@ -41,7 +42,7 @@ public class Main {
 		/**
 		 * Start Program
 		 */
-
+		EventSocket.setFilter(filter);
 		defaultProxy.start(9090);
 		frontEnd.start(8090);
 	}

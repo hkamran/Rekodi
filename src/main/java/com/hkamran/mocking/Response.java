@@ -130,6 +130,10 @@ public class Response {
 		this.parent = hashCode;
 	}
 	
+	public Integer getParent() {
+		return parent;
+	}
+	
 	public Map<String, String> getHeaders() {
 		return headers;
 	}

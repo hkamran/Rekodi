@@ -32,6 +32,7 @@ public class Request {
 	private String method = "";
 	private String uri = "";
 	private State state;
+	public Integer pastID = -1;
 	
 	public Integer counter = 0;
 
@@ -180,6 +181,13 @@ public class Request {
 		return true;
 	}
 	
+	public Integer getPastID() {
+		if (pastID == -1) {
+			return hashCode();
+		}
+		return pastID;
+	}
+	
 	public Map<String, String> getHeaders() {	
 		return headers;
 	}
@@ -218,6 +226,7 @@ public class Request {
 		json.put("id", this.hashCode());
 		json.put("headers", this.headers);
 		json.put("state", this.state);
+		json.put("pastID", this.getPastID());
 		
 		return json;
 	}
@@ -233,6 +242,7 @@ public class Request {
 		String matchType = json.getString("matchType");
 		String matchString = json.getString("matchString");
 		String state = json.getString("state");
+		Integer oldId = json.getInt("id");
 		
 		JSONObject headersJSON = json.getJSONObject("headers");
 		
@@ -243,6 +253,7 @@ public class Request {
 		
 		Request request = new Request(headers, content, protocol, method, uri, State.valueOf(state));
 		request.setMatchType(MATCHTYPE.valueOf(matchType));
+		request.pastID = oldId;
 		request.setMatchString(matchString);
 		
 		return request;

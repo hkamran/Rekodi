@@ -15,8 +15,10 @@ public class Event {
 	public String start;
 	public Long duration;
 	public String state;
-
-	public Event(Request req, Response res, Date date, Long duration, State state) {
+	public Integer id;
+	
+	public Event(Integer id, Request req, Response res, Date date, Long duration, State state) {
+		this.id = id;
 		this.request = req;
 		this.response = res;
 		this.duration = duration;
@@ -29,9 +31,16 @@ public class Event {
 	public JSONObject toJSON() {
 		JSONObject result = new JSONObject();
 		
-		JSONObject request = this.request.toJSON();
-		JSONObject response = this.response.toJSON();
+		JSONObject request = new JSONObject();
+		if (this.request != null) {
+			request = this.request.toJSON();
+		}
+		JSONObject response = new JSONObject();
+		if (this.response != null) {
+			response = this.response.toJSON();
+		}
 		
+		result.put("id", id);
 		result.put("request", request);
 		result.put("response", response); 
 

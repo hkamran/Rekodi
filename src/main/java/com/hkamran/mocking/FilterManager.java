@@ -9,7 +9,9 @@ import io.netty.handler.codec.http.HttpResponse;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
@@ -23,21 +25,23 @@ import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersAdapter;
 import org.littleshoot.proxy.HttpFiltersSourceAdapter;
 
+import com.hkamran.mocking.websockets.EventSocket;
+import com.hkamran.mocking.websockets.Payload;
+
 public class FilterManager extends HttpFiltersSourceAdapter implements ChainedProxyManager {
 
 	private static final int EVENT_MAX_SIZE = 100;
 	private final static Logger log = Logger.getLogger(FilterManager.class);
 	private static final int MAX_SIZE = 8388608;
 	
-	private State state = State.PROXY;
+	
 	private Tape tape;
 	private Recorder recorder;
 	
-	public String redirectHost;
-	public Integer redirectPort;
-	public Boolean redirectState = false;	
+	public Settings settings;
 	
 	private List<Event> events = new ArrayList<Event>();
+	private Integer counter = 0;
 	
 	public static enum State {
 		MOCK, PROXY, RECORD;
@@ -45,6 +49,7 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 
 	public FilterManager() {
 		tape = new Tape();
+		settings = new Settings();
 		recorder = new Recorder(tape);
 	}
 
@@ -62,8 +67,8 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 				try {
 					if (httpObject instanceof DefaultFullHttpRequest) {
 						DefaultFullHttpRequest httpFullObj = (DefaultFullHttpRequest) httpObject;
-						if (redirectState) {
-							httpFullObj.headers().set("Host", redirectHost + ":" + redirectPort);
+						if (settings.redirect) {
+							httpFullObj.headers().set("Host", settings.host + ":" + settings.port);
 						}
 					}
 				} catch (Exception e) {
@@ -78,6 +83,8 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 			public HttpResponse requestPost(HttpObject httpObject) {
 				try {
 					if (httpObject instanceof DefaultFullHttpRequest) {
+						State state = settings.state;
+						
 						DefaultFullHttpRequest httpFullObj = (DefaultFullHttpRequest) httpObject;
 						req = new Request(httpFullObj, state);
 						
@@ -85,13 +92,25 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 						watch = new StopWatch();
 						watch.start();
 						
+						
+						
 						if (state == State.PROXY) {
 							//No need
 						} else if (state == State.MOCK) {
-							return sendToMock(req, watch);
+							 HttpResponse response = sendToMock(req, watch);
+							 if (!settings.redirect) {
+								return handleNoRedirect();
+							 }
+							 return response;
 						} else if (state == State.RECORD) {
 							//No Need
 						}
+						
+						if (!settings.redirect) {
+							return handleNoRedirect();
+						}
+						
+						addEvent(counter, res, req, watch);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -100,17 +119,37 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 				return null;
 			}
 
+			private HttpResponse handleNoRedirect() {
+				Map<String, String> headers = new HashMap<String, String>();
+				String content = "";
+				String protocol = "HTTP/1.1";
+				Integer status = 505;
+				State resState = settings.state;
+				Response response = new Response(headers, content, protocol, status, resState);
+				this.res = response;
+				try {
+					watch.stop();
+				} catch(IllegalStateException e) {
+					
+				}
+				addEvent(counter++, res, req, watch);
+				return response.getHTTPObject();
+			}
+
 			@Override
 			public HttpObject responsePost(HttpObject httpObject) {
 				try {
 					if (httpObject instanceof DefaultFullHttpResponse) {
+						State state = settings.state;
+						
 						DefaultFullHttpResponse httpFullObj = (DefaultFullHttpResponse) httpObject;
 						res = new Response(httpFullObj, state);
 						res.setParent(req.hashCode());
-						watch.stop();
-	
-						addEvent(res, req, watch);
-
+						try {
+							watch.stop();
+						} catch(IllegalStateException e) {
+							
+						}
 						log.info("Response outgoing: " + res.hashCode() + " for " + req.hashCode());
 						
 						if (state == State.PROXY) {
@@ -121,8 +160,9 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 							sendToRecorder(res, req);
 						}
 						
+						addEvent(counter++, res, req, watch);
+						
 					}
-					
 					return httpObject;
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -134,13 +174,13 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 		};
 	}
 	
-	private void addEvent(Response res, Request req, StopWatch watch) {
+	private void addEvent(Integer id, Response res, Request req, StopWatch watch) {
 		Long duration = TimeUnit.MILLISECONDS.toMillis(watch.getTime());
-		if (events.size() > EVENT_MAX_SIZE) {
-			events = new ArrayList<Event>();
-		}
 		
-		events.add(new Event(req, res, new Date(watch.getStartTime()), duration, state));
+		Event event = new Event(id, req, res, new Date(watch.getStartTime()), duration, settings.state);
+		
+		Payload payload = new Payload(Payload.Type.EVENT, event);
+		EventSocket.broadcast(payload);
 	}
 
 
@@ -157,13 +197,14 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 		Response response = tape.getResponse(request);
 		
 		watch.stop();
-		addEvent(response, request, watch);
-	
+		
 		if (response != null) {
 			log.info("Mocked Response outgoing: " + response.hashCode() + " for " + request.hashCode());
+			addEvent(counter++, response, request, watch);
 			return (HttpResponse) response.getHTTPObject();
 		} else {
 			log.info("Mocked Response outgoing: null for " + request.hashCode());
+			addEvent(counter, response, request, watch);
 			return null;
 		}
 	}
@@ -180,7 +221,7 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 
 	public void setState(State state) {
 		log.info("State set to " + state.toString());
-		this.state = state;
+		settings.state = state;
 	}
 
 	public Tape getTape() {
@@ -197,30 +238,30 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	}
 
 	public void setRedirectInfo(String host, Integer port) {
-		this.redirectHost = host;
-		this.redirectPort = port;
-		log.info("Redirecting set to " + redirectHost + ":" + redirectPort);
+		settings.host = host;
+		settings.port = port;
+		log.info("Redirecting set to " + settings.host + ":" + settings.port);
 	}
 
 	public void setRedirectState(boolean state) {
 		log.info("Redirecting state: " + state);
-		this.redirectState = state;
+		settings.redirect = state;
 	}
 	
 	public Boolean getRedirectState() {
-		return redirectState;
+		return settings.redirect ;
 	}
 
 	public String getHost() {
-		return redirectHost;
+		return settings.host;
 	}
 	
 	public Integer getPort() {
-		return redirectPort;
+		return settings.port;
 	}	
 	
 	public State getState() {
-		return state;
+		return settings.state;
 	}
 	
 	public List<Event> getEvents() {
@@ -253,25 +294,24 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	}	
 	
 	public JSONObject toJSON() {
-		JSONObject result = new JSONObject();
-		result.put("proxy", getState()); 
-		result.put("state", getRedirectState());
-		result.put("host", getHost());
-		result.put("port", getPort());
-		return result;
+		return settings.toJSON();
 	}
 	
 	public void parseJSON(String source) {
-		JSONObject json = new JSONObject(source);
+		Settings settings = Settings.parseJSON(source);
 		
-		String proxyState = json.getString("state");
-		Boolean redirectState = json.getBoolean("redirect");
-		String host = json.getString("host");
-		Integer port = json.getInt("port");
+		State proxyState = settings.state;
+		Boolean redirectState = settings.redirect;
+		String host = settings.host;
+		Integer port = settings.port;
 		
-		this.setState(State.valueOf(proxyState));
-		this.setRedirectInfo(host, port);
-		this.setRedirectState(redirectState);
+
+	}
+	
+	public void setSettings(Settings settings) {
+		this.setState(settings.state);
+		this.setRedirectInfo(settings.host, settings.port);
+		this.setRedirectState(settings.redirect);
 	}
 	
 
