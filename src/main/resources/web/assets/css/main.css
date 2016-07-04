@@ -232,3 +232,56 @@ html, body {
 .editing {
     font-size: 9pt;
 }
+
+.settings {
+    background: #f8f8f8 none repeat scroll 0 0;
+    border: 1px solid #b3b3b3;
+    box-sizing: border-box;
+    left: 0;
+    margin: 0 auto;
+    max-width: 400px;
+    padding: 10px 15px 15px;
+    position: absolute;
+    right: 0;
+    top: 25%;
+    width: 80%;
+    z-index: 1000;
+    box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.25);
+}
+
+.settings label {
+    color: #696969;
+    display: block;
+    font-size: 0.77778rem;
+    font-weight: normal;
+    line-height: 0;
+    margin-top: 15px;
+    text-align: left;
+    position: relative;
+    text-align: left;
+}
+
+.settings label input {
+    background: #ffffff none repeat scroll 0 0;
+    border: 1px solid #b5b5b5;
+    box-sizing: border-box;
+    color: #5e5e5e;
+    display: inline-block;
+    margin-top: 12px;
+    padding: 5px;
+    width: 100%;
+}
+
+.settings .button {
+    padding: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    float: right;
+    display: inline-block;
+    background: #dddddd;
+    border: 1px solid #c4c4c4;
+    color: #535353;
+    font-size: 10pt;
+    box-sizing: border-box;
+
+}

@@ -1,7 +1,7 @@
 .table {
-    display: table !important;
-    table-layout: fixed;
-}
+     display: table !important;
+     table-layout: fixed;
+ }
 
 .row {
     display: table-row !important;
@@ -41,56 +41,91 @@
     flex: 1;
 
 }
+table {
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+#tBody td {
+    border-right: 1px solid #dcdcdc;
+    border-bottom: 1px solid #dcdcdc;
+    box-sizing: border-box;
+    font-family: Arial;
+    font-size: 9pt;
+    padding: 9px;
 
-table th {
-    border-top: 0px;
-    border-right: 1px solid #a9a9a9 ;
+}
+/* SCROLL TABLE ESSENTIALS (+ SOME ADDITIONAL CSS): */
+div#scrollTableContainer {
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    position: absolute;
+    overflow: hidden;
+}
+.touchScreen div#scrollTableContainer {
+    width: 600px; /* touch devices do not form scrollbars (= 17 px wide) */
+}
+#tHeadContainer {
+    height: 31px;
     border-bottom: 1px solid #999;
+}
+#tBodyContainer {
+    height: calc(100% - 29px);
+    overflow-y: scroll;
 
+}
 
-    height: 15px;
+#tHeadContainer td {
     text-align: left;
     font-weight: 400;
     font-family: Arial;
     font-size: 8pt;
+    box-sizing: border-box;
     color: #727272;
-
-    top: 0;
-
+    border-right: 1px solid #a9a9a9 ;
+    padding-left: 10px;
 }
 
-table tbody {
-    bottom: 0;
-    display: block;
-    overflow: hidden;
-    overflow-y: scroll;
-    position: absolute;
-    top: 32px;
+#tHeadContainer td:last-child {
+    border-right: 0px;
+    min-width: 147px; /* add 17 */
+}
+
+.touchScreen #tBodyContainer {
+    -webkit-overflow-scrolling: touch; /* smooths scrolling on touch screens */
+}
+/* FINER LAYOUT MATTERS: */
+tr:first-child td {
+    border-top: 0;
+}
+#tBody tr.lastRow td {
+    border-bottom: 0;
+}
+
+#tBody tr td:last-child {
+    border-right: 0px;
+}
+
+td:first-child {
+    min-width: 108px; /* Firefox needs min- and max-widths */
+    max-width: 108px;
+    border-left: 0;
+}
+td:first-child + td {
+    min-width: 125px;
     width: 100%;
 }
-
-table td {
-    border-right: 1px solid #dcdcdc;
-    border-bottom: 1px solid #dcdcdc;
-
-    font-family: Arial;
-    font-size: 9pt;
-
-    white-space: nowrap;
+td:first-child + td + td {
+    min-width: 130px;
+    max-width: 130px;
 }
-
-table tbody tr:nth-child(odd) {
-
+td:first-child + td + td + td {
+    min-width: 130px;
+    max-width: 130px;
 }
-
-table tbody tr:nth-child(even) {
-
-}
-
-table>tbody>tr>th:last-child {
-    border-right: 0px;
-}
-
-table>tbody>tr>td:last-child {
-    border-right: 0px;
+td:first-child + td + td + td + td {
+    width: 180px; /* here, Firefox messes up with only min- and max-widths */
+    min-width: 130px;
+    border-right: 0;
 }

@@ -412,7 +412,7 @@ public class HTTPServer {
 
 	    HandlerList handlers = new HandlerList();
 	    handlers.setHandlers(new Handler[] {
-	    		wsHandler
+	    		wsHandler, staticHandler, restHandler
 	    });
 				
 	    server.setHandler(handlers);
