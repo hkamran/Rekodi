@@ -4,9 +4,8 @@ import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
 
-import com.hkamran.mocking.FilterManager.State;
+import com.hkamran.mocking.Filter.State;
 import com.hkamran.mocking.servers.HTTPServer;
-import com.hkamran.mocking.servers.ProxyServer;
 import com.hkamran.mocking.websockets.EventSocket;
 
 /**
@@ -25,7 +24,18 @@ public class Main {
 		
 		log.info("Starting up Recorder....");
 		
-		FilterManager filter = new FilterManager();
+//		Filter filter = new Filter();
+
+//		
+//		
+		HTTPServer frontEnd = new HTTPServer();
+//	frontEnd.addFilter("default", filter);
+		
+		ProxyManager proxies = new ProxyManager();
+		Integer id = proxies.add("default", 9090);
+		Proxy proxy = proxies.get(id);
+		Filter filter = proxy.getFilter();
+		
 		Integer port = 80;
 		String host = "www.thomas-bayer.com";
 		
@@ -33,17 +43,10 @@ public class Main {
 		filter.setRedirectInfo(host, port);
 		filter.setRedirectState(true);
 		
-		
-		HTTPServer frontEnd = new HTTPServer();
-		frontEnd.addFilter("default", filter);
-		ProxyServer defaultProxy = new ProxyServer(filter);
-
-		
 		/**
 		 * Start Program
 		 */
-		EventSocket.setFilter(filter);
-		defaultProxy.start(9090);
+		EventSocket.setProxyManager(proxies);
 		frontEnd.start(8090);
 	}
 }

@@ -14,7 +14,9 @@ import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.hkamran.mocking.Request.MATCHTYPE;
+import com.hkamran.mocking.model.Request;
+import com.hkamran.mocking.model.Response;
+import com.hkamran.mocking.model.Request.MATCHTYPE;
 
 public class Tape {
 

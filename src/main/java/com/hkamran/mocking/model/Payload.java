@@ -1,32 +1,31 @@
-package com.hkamran.mocking.websockets;
+package com.hkamran.mocking.model;
 
 import org.json.JSONObject;
 
-import com.hkamran.mocking.Event;
-import com.hkamran.mocking.FilterManager;
-import com.hkamran.mocking.Request;
-import com.hkamran.mocking.Response;
-import com.hkamran.mocking.Settings;
+import com.hkamran.mocking.Proxy;
 import com.hkamran.mocking.Tape;
 
 public class Payload {
 
 	public static enum Type {
-		TAPE, REQUEST, RESPONSE, SETTINGS, NONE, EVENT
+		TAPE, REQUEST, RESPONSE, SETTINGS, NONE, EVENT, PROXY
 	}
 	
-	Type type;
-	Object obj;
+	public Type type;
+	public Object obj;
+	public Integer id;
 	
-	public Payload(Type type, Object obj) {
+	public Payload(Integer id, Type type, Object obj) {
 		this.type = type;
 		this.obj = obj;
+		this.id = id;
 	}
 	
 	public JSONObject toJSON() {
 		
 		JSONObject json = new JSONObject();
 		json.put("type", this.type);
+		json.put("id", id);
 		
 		JSONObject payload;
 		
@@ -45,6 +44,9 @@ public class Payload {
 		} else if (obj instanceof Settings) {
 			Settings settings = (Settings) obj;
 			payload = settings.toJSON();
+		} else if (obj instanceof Proxy) {
+			Proxy proxy = (Proxy) obj;
+			payload = proxy.toJSON();
 		} else {
 			this.type = Type.NONE;
 			payload = new JSONObject();
@@ -61,6 +63,7 @@ public class Payload {
 		
 		Type type = Type.valueOf(json.getString("type"));
 		String message = json.get("message").toString();
+		Integer id = json.getInt("id");
 		
 		Object obj = null;
 		if (type == Type.TAPE) {
@@ -72,15 +75,17 @@ public class Payload {
 			obj = Response.parseJSON(message);
 		} else if (type == Type.SETTINGS) {
 			obj = Settings.parseJSON(message);
+		} else if (type == Type.PROXY) {
+			obj = Proxy.parseJSON(message);			
 		} else {
 			
 		}
-		Payload payload = new Payload(type, obj);
+		Payload payload = new Payload(id, type, obj);
 		return payload;	
 	}
 	
-	public static Payload create(Type type, Object payload) {
-		return new Payload(type, payload);
+	public static Payload create(Integer id, Type type, Object payload) {
+		return new Payload(id, type, payload);
 	}
 	
 }

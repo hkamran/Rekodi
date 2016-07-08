@@ -36,23 +36,23 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.hkamran.mocking.Event;
-import com.hkamran.mocking.FilterManager;
-import com.hkamran.mocking.Request;
+import com.hkamran.mocking.Filter;
 import com.hkamran.mocking.Tape;
+import com.hkamran.mocking.model.Event;
+import com.hkamran.mocking.model.Request;
 import com.hkamran.mocking.websockets.EventSocket;
 
 @Path("/")
 public class HTTPServer {
 
 	private final static Logger log = Logger.getLogger(HTTPServer.class);
-	private static Map<String, FilterManager> filters = new HashMap<String, FilterManager>();
+	private static Map<String, Filter> filters = new HashMap<String, Filter>();
 
-	public void addFilter(String name, FilterManager filter) {
+	public void addFilter(String name, Filter filter) {
 		filters.put(name, filter);
 	}
 
-	public Map<String, FilterManager> getFilters() {
+	public Map<String, Filter> getFilters() {
 		return filters;
 	}
 
@@ -72,7 +72,7 @@ public class HTTPServer {
 	public Response getEvents(@PathParam("proxyName") String proxyName) {
 
 		// log.info("Requesting events for " + proxyName);
-		FilterManager filter = filters.get(proxyName);
+		Filter filter = filters.get(proxyName);
 		List<Event> events = filter.getEvents();
 
 		JSONArray eventsJSON = new JSONArray();
@@ -99,7 +99,7 @@ public class HTTPServer {
 		log.info("Requesting request information for " + proxyName
 				+ " on request " + requestID);
 
-		FilterManager filter = filters.get(proxyName);
+		Filter filter = filters.get(proxyName);
 		Tape tape = filter.getTape();
 		Request request = tape.getRequest(requestID);
 
@@ -132,20 +132,20 @@ public class HTTPServer {
 		log.info("Requesting response information for " + proxyName
 				+ " on request " + requestID + " on response " + responseID);
 
-		FilterManager filter = filters.get(proxyName);
+		Filter filter = filters.get(proxyName);
 		Tape tape = filter.getTape();
 		Request request = tape.getRequest(requestID);
 		if (request == null) {
 			// error
 		}
 
-		List<com.hkamran.mocking.Response> responses = tape
+		List<com.hkamran.mocking.model.Response> responses = tape
 				.getResponses(request);
 		if (responseID < 0 || responseID >= responses.size()) {
 			// error
 		}
 
-		com.hkamran.mocking.Response response = responses.get(responseID);
+		com.hkamran.mocking.model.Response response = responses.get(responseID);
 		JSONObject responseJSON = response.toJSON();
 
 		return Response
@@ -165,7 +165,7 @@ public class HTTPServer {
 	public Response getTape(@PathParam("proxyName") String proxyName) {
 		log.info("Requesting tape information for " + proxyName);
 
-		FilterManager filter = filters.get(proxyName);
+		Filter filter = filters.get(proxyName);
 		Tape tape = filter.getTape();
 		JSONObject tapeJSON = tape.toJSON();
 
@@ -186,12 +186,12 @@ public class HTTPServer {
 	public Response getSettings(@PathParam("proxyName") String proxyName) {
 		log.info("Requesting filter information for " + proxyName);
 
-		FilterManager filter = filters.get(proxyName);
-		JSONObject filterSettings = filter.toJSON();
+		Filter filter = filters.get(proxyName);
+		//JSONObject filterSettings = filter.toJSON();
 
 		return Response
 				.status(200)
-				.entity(filterSettings.toString(2))
+				.entity("")
 				.header("Access-Control-Allow-Origin", "*")
 				.header("Access-Control-Allow-Methods",
 						"GET, POST, DELETE, PUT").allow("OPTIONS").build();
@@ -212,8 +212,8 @@ public class HTTPServer {
 		log.info("Updating settings " + proxyName);
 
 		try {
-			FilterManager filter = filters.get(proxyName);
-			filter.parseJSON(json);
+			Filter filter = filters.get(proxyName);
+			//filter.parseJSON(json);
 		} catch (Exception e) {
 			log.error("Updating settings " + proxyName + " failed.");
 			e.printStackTrace();
@@ -250,7 +250,7 @@ public class HTTPServer {
 			@PathParam("requestID") String requestID, final String json) {
 		try {
 			Request request = Request.parseJSON(json);
-			FilterManager filter = filters.get(proxyName);
+			Filter filter = filters.get(proxyName);
 			filter.getTape().setRequest(requestID, request);
 			log.info("Updating request " + requestID + " on " + proxyName);
 
@@ -294,11 +294,11 @@ public class HTTPServer {
 			@PathParam("responseID") Integer responseID, final String json) {
 
 		try {
-			com.hkamran.mocking.Response response = com.hkamran.mocking.Response
+			com.hkamran.mocking.model.Response response = com.hkamran.mocking.model.Response
 					.parseJSON(json);
-			FilterManager filter = filters.get(proxyName);
+			Filter filter = filters.get(proxyName);
 			Request request = filter.getTape().getRequest(requestID);
-			List<com.hkamran.mocking.Response> responses = filter.getTape()
+			List<com.hkamran.mocking.model.Response> responses = filter.getTape()
 					.getResponses(request);
 
 			responses.set(responseID, response);
@@ -344,7 +344,7 @@ public class HTTPServer {
 	public Response setTape(@PathParam("proxyName") String proxyName,
 			final String json) {
 		try {
-			FilterManager filter = filters.get(proxyName);
+			Filter filter = filters.get(proxyName);
 			filter.setTape(Tape.parseJSON(json));
 
 			return Response

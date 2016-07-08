@@ -17,17 +17,20 @@ import javax.websocket.server.ServerEndpoint;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 
-import com.hkamran.mocking.FilterManager;
-import com.hkamran.mocking.Request;
-import com.hkamran.mocking.Response;
-import com.hkamran.mocking.Settings;
+import com.hkamran.mocking.Filter;
+import com.hkamran.mocking.Proxy;
+import com.hkamran.mocking.ProxyManager;
 import com.hkamran.mocking.Tape;
+import com.hkamran.mocking.model.Payload;
+import com.hkamran.mocking.model.Request;
+import com.hkamran.mocking.model.Response;
+import com.hkamran.mocking.model.Settings;
 
 @ClientEndpoint
 @ServerEndpoint(value = "/")
 public class EventSocket {
 
-	private static FilterManager filter;
+	private static ProxyManager manager = new ProxyManager();
 	private final static Logger log = Logger.getLogger(EventSocket.class);
 	static List<Session> sessions = new ArrayList<Session>();
 
@@ -35,8 +38,18 @@ public class EventSocket {
 	public void OnWebSocketConnect(Session session) {
 		sessions.add(session);
 		log.info("Socket Opened: " + session.getId());
-		send(session, Payload.create(Payload.Type.SETTINGS, filter.settings));
-		send(session, Payload.create(Payload.Type.TAPE, filter.getTape()));
+		
+
+		for (Proxy proxy : manager.getProxies()) {
+			Payload payload = Payload.create(proxy.getID(), Payload.Type.PROXY, proxy);
+			send(session, payload);
+		}
+		
+		Integer id = 0;
+		Proxy proxy = manager.get(id);
+		Filter filter = proxy.getFilter();
+		send(session, Payload.create(id, Payload.Type.SETTINGS, filter.settings));
+		send(session, Payload.create(id, Payload.Type.TAPE, filter.getTape()));
 	}
 	
 	@OnMessage
@@ -53,45 +66,74 @@ public class EventSocket {
 			handleRequestUpdate(session, payload);
 		} else if (payload.type == Payload.Type.RESPONSE) {
 			handleResponseUpdate(session, payload);
+		} else if (payload.type == Payload.Type.PROXY) {
+			handleProxyUpdate(session, payload);
 		}
 	}
 	
+	private void handleProxyUpdate(Session session, Payload payload) {
+		Proxy proxy = (Proxy) payload.obj;
+		
+		Integer id = EventSocket.manager.add(proxy.name, proxy.port);
+		Proxy created = EventSocket.manager.get(id);
+		
+		EventSocket.broadcast(Payload.create(created.id,  Payload.Type.PROXY, created.toJSON()));
+	}
+
 	private void handleResponseUpdate(Session session, Payload payload) {
 		Response response = (Response) payload.obj;
 		
+		Integer id = payload.id;
+		Proxy proxy = manager.get(id);
+		Filter filter = proxy.getFilter();
 		Tape tape = filter.getTape();
+		
 		Request request = tape.getRequest(response.getParent().toString());
+		
 		List<Response> responses = tape.getResponses(request);
 		responses.set(response.getId(), response);
 
-		Payload updateTape = Payload.create(Payload.Type.TAPE, filter.getTape());
+		Payload updateTape = Payload.create(id, Payload.Type.TAPE, filter.getTape());
 		EventSocket.broadcast(updateTape);	
 		
-		Payload updatedResponse = Payload.create(Payload.Type.RESPONSE, response);
+		Payload updatedResponse = Payload.create(id, Payload.Type.RESPONSE, response);
 		EventSocket.broadcast(updatedResponse);
 	}
 
 	private void handleRequestUpdate(Session session, Payload payload) {
 		Request request = (Request) payload.obj;
+		Integer id = payload.id;
+		Proxy proxy = manager.get(id);
+		Filter filter = proxy.getFilter();
+		
 		filter.getTape().setRequest(request.pastID.toString(), request);
 
-		Payload updateTape = Payload.create(Payload.Type.TAPE, filter.getTape());
+		Payload updateTape = Payload.create(id, Payload.Type.TAPE, filter.getTape());
 		EventSocket.broadcast(updateTape);	
 		
-		Payload updatedRequest = Payload.create(Payload.Type.REQUEST, request);
+		Payload updatedRequest = Payload.create(id, Payload.Type.REQUEST, request);
 		EventSocket.broadcast(updatedRequest);
 	}
 
 	private void handleTapeUpdate(Payload payload) {
+		Integer id = payload.id;
+		Proxy proxy = manager.get(id);
+		Filter filter = proxy.getFilter();
+		
 		Tape tape = (Tape) payload.obj;
 		filter.setTape(tape);
-		Payload update = Payload.create(Payload.Type.TAPE, filter.getTape());
+		Payload update = Payload.create(id, Payload.Type.TAPE, filter.getTape());
 		EventSocket.broadcast(update);
 	}
 
 	private void handleSettingsUpdate(Payload payload) {
+		Integer id = payload.id;
+		Proxy proxy = manager.get(id);
+		
+		Filter filter = proxy.getFilter();
 		filter.setSettings((Settings) payload.obj);
-		EventSocket.broadcast(Payload.create(Payload.Type.SETTINGS, filter.settings));
+		
+		EventSocket.broadcast(Payload.create(id, Payload.Type.SETTINGS, filter.settings));
 	}
 
 	@OnClose
@@ -129,8 +171,8 @@ public class EventSocket {
 		}
 	}
 	
-	public static void setFilter(FilterManager filter) {
-		EventSocket.filter = filter;
+	public static void setProxyManager(ProxyManager manager) {
+		EventSocket.manager = manager;
 	}
 
 }

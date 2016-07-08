@@ -1,4 +1,4 @@
-package com.hkamran.mocking;
+package com.hkamran.mocking.model;
 
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
@@ -13,7 +13,8 @@ import java.util.Map.Entry;
 
 import org.json.JSONObject;
 
-import com.hkamran.mocking.FilterManager.State;
+import com.hkamran.mocking.Filter;
+import com.hkamran.mocking.Filter.State;
 import com.hkamran.mocking.util.Formatter;
 
 public class Request {

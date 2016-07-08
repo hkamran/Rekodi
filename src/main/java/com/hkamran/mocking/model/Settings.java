@@ -1,15 +1,16 @@
-package com.hkamran.mocking;
+package com.hkamran.mocking.model;
 
 import org.json.JSONObject;
 
-import com.hkamran.mocking.FilterManager.State;
+import com.hkamran.mocking.Filter;
+import com.hkamran.mocking.Filter.State;
 
 public class Settings {
 
-	public State state;
-	public String host;
-	public Integer port;
-	public Boolean redirect;
+	public State state = Filter.State.PROXY;
+	public String host = "localhost";
+	public Integer port = 80;
+	public Boolean redirect = false;
 
 	public static Settings parseJSON(String source) {
 		JSONObject json = new JSONObject(source);
@@ -21,7 +22,7 @@ public class Settings {
 
 		Settings settings = new Settings();
 
-		settings.state = FilterManager.State.valueOf(proxyState);
+		settings.state = Filter.State.valueOf(proxyState);
 		settings.redirect = redirectState;
 		settings.host = host;
 		settings.port = port;

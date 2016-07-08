@@ -25,13 +25,17 @@ import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersAdapter;
 import org.littleshoot.proxy.HttpFiltersSourceAdapter;
 
+import com.hkamran.mocking.model.Event;
+import com.hkamran.mocking.model.Payload;
+import com.hkamran.mocking.model.Request;
+import com.hkamran.mocking.model.Response;
+import com.hkamran.mocking.model.Settings;
 import com.hkamran.mocking.websockets.EventSocket;
-import com.hkamran.mocking.websockets.Payload;
 
-public class FilterManager extends HttpFiltersSourceAdapter implements ChainedProxyManager {
+public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyManager {
 
 	private static final int EVENT_MAX_SIZE = 100;
-	private final static Logger log = Logger.getLogger(FilterManager.class);
+	private final static Logger log = Logger.getLogger(Filter.class);
 	private static final int MAX_SIZE = 8388608;
 
 	private Tape tape;
@@ -41,15 +45,15 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 
 	private List<Event> events = new ArrayList<Event>();
 	private Integer counter = 0;
-
+	
 	public static enum State {
 		MOCK, PROXY, RECORD;
 	}
 
-	public FilterManager() {
-		tape = new Tape();
-		settings = new Settings();
-		recorder = new Recorder(tape);
+	public Filter() {
+		this.tape = new Tape();
+		this.settings = new Settings();
+		this.recorder = new Recorder(tape);
 	}
 
 	@Override
@@ -175,7 +179,7 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 
 		Event event = new Event(id, req, res, new Date(watch.getStartTime()), duration, settings.state);
 
-		Payload payload = new Payload(Payload.Type.EVENT, event);
+		Payload payload = new Payload(id, Payload.Type.EVENT, event);
 		EventSocket.broadcast(payload);
 	}
 
@@ -287,21 +291,7 @@ public class FilterManager extends HttpFiltersSourceAdapter implements ChainedPr
 	public int getMaximumResponseBufferSizeInBytes() {
 		return MAX_SIZE;
 	}
-
-	public JSONObject toJSON() {
-		return settings.toJSON();
-	}
-
-	public void parseJSON(String source) {
-		Settings settings = Settings.parseJSON(source);
-
-		State proxyState = settings.state;
-		Boolean redirectState = settings.redirect;
-		String host = settings.host;
-		Integer port = settings.port;
-
-	}
-
+	
 	public void setSettings(Settings settings) {
 		this.setState(settings.state);
 		this.setRedirectInfo(settings.host, settings.port);
