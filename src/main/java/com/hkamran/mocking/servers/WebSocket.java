@@ -40,6 +40,8 @@ public class WebSocket {
 		sessions.add(session);
 		log.info("Socket Opened: " + session.getId());
 		
+		session.setMaxIdleTimeout(600000);
+		
 		WebSocket.send(session, Payload.create(-1, 
 				Action.UPDATE, 
 				Payload.Type.PROXIES, WebSocket.proxies));
