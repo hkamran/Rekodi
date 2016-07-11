@@ -42,12 +42,14 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 	public String host = "localhost";
 	public Integer port = 80;
 	public Boolean redirect = true;
+	public Integer id;
 	
 	public static enum State {
 		MOCK, PROXY, RECORD;
 	}
 
-	public Filter() {
+	public Filter(Integer id) {
+		this.id = id;
 		this.tape = new Tape();
 		this.recorder = new Recorder(tape);
 	}
@@ -173,7 +175,7 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 
 		Event event = new Event(id, req, res, new Date(watch.getStartTime()), duration, state);
 
-		Payload payload = new Payload(id, Payload.Action.INSERT, Payload.Type.EVENT, event);
+		Payload payload = new Payload(this.id, Payload.Action.INSERT, Payload.Type.EVENT, event);
 		WebSocket.broadcast(payload);
 	}
 
@@ -292,17 +294,20 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 		json.put("port", this.port);
 		json.put("redirect", this.redirect);
 		json.put("state", this.state);
+		json.put("id", this.id);
 		return json;
 	}
 	
 	public static Filter parseJSON(String source) {
 		JSONObject json = new JSONObject(source);
+		
+		Integer id = json.getInt("id");
 		String host = json.getString("host");
 		Integer port = json.getInt("port");
 		Boolean redirect = json.getBoolean("redirect");
 		State state = State.valueOf(json.getString("state"));
 		
-		Filter filter = new Filter();
+		Filter filter = new Filter(id);
 		filter.setRedirectInfo(host, port);
 		filter.setRedirectState(redirect);
 		filter.setState(state);

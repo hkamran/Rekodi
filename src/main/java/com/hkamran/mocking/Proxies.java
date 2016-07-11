@@ -51,6 +51,10 @@ public class Proxies {
 		return proxies.get(id);
 	}
 	
+	public Integer size() {
+		return proxies.keySet().size();
+	}
+	
 	public List<Proxy> getProxies() {
 		List<Proxy> proxies = new ArrayList<Proxy>();
 		for (Integer key : this.proxies.keySet()) {

@@ -23,9 +23,9 @@ public class Proxy {
 	}
 
 	public Proxy(Integer id, String name, Integer port) {
-		this.filter = new Filter();
 		this.port = port;
 		this.id = id;
+		this.filter = new Filter(this.id);
 		this.name = name;
 		this.status = Status.STOP;
 	}

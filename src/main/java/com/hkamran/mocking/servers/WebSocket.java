@@ -40,7 +40,7 @@ public class WebSocket {
 		sessions.add(session);
 		log.info("Socket Opened: " + session.getId());
 		
-		WebSocket.broadcast(Payload.create(-1, 
+		WebSocket.send(session, Payload.create(-1, 
 				Action.UPDATE, 
 				Payload.Type.PROXIES, WebSocket.proxies));
 		
@@ -98,16 +98,21 @@ public class WebSocket {
 			}
 			
 			if (payload.action == Payload.Action.DELETE) {
-				Proxy originalProxy = WebSocket.proxies.get(proxy.id);
+				synchronized (proxies) {
+					if (WebSocket.proxies.size() == 1) {
+						return;
+					}
 				
-				Payload payloadUpdate = Payload.create(-1, 
-						Payload.Action.DELETE, 
-						Payload.Type.PROXY, originalProxy);
-				WebSocket.broadcast(payloadUpdate);
-				log.info("Deleting proxy " + originalProxy.id + ":" + originalProxy.name);
-				
-				WebSocket.proxies.remove(proxy.id);
-				return;
+					Proxy originalProxy = WebSocket.proxies.get(proxy.id);					
+					Payload payloadUpdate = Payload.create(-1, 
+							Payload.Action.DELETE, 
+							Payload.Type.PROXY, originalProxy);
+					WebSocket.broadcast(payloadUpdate);
+					log.info("Deleting proxy " + originalProxy.id + ":" + originalProxy.name);
+					
+					WebSocket.proxies.remove(proxy.id);
+					return;
+				}
 			} else if (payload.action == Payload.Action.UPDATE) {
 				Proxy curProxy = WebSocket.proxies.get(proxy.id);
 				
