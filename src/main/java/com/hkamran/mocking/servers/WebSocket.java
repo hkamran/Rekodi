@@ -44,17 +44,20 @@ public class WebSocket {
 				Action.UPDATE, 
 				Payload.Type.PROXIES, WebSocket.proxies));
 		
-		Integer id = 0;
-		Proxy proxy = proxies.get(id);
-		Filter filter = proxy.getFilter();
-		
-		WebSocket.send(session, Payload.create(id, 
-				Payload.Action.UPDATE, 
-				Payload.Type.FILTER, filter));
-		
-		WebSocket.send(session, Payload.create(id, 
-				Payload.Action.UPDATE,
-				Payload.Type.TAPE, filter.getTape()));
+		for (Integer id : WebSocket.proxies.keySet()) {
+			Proxy proxy = WebSocket.proxies.get(id);
+			
+			Filter filter = proxy.getFilter();
+			
+			WebSocket.send(session, Payload.create(id, 
+					Payload.Action.UPDATE, 
+					Payload.Type.FILTER, filter));
+			
+			WebSocket.send(session, Payload.create(id, 
+					Payload.Action.UPDATE,
+					Payload.Type.TAPE, filter.getTape()));
+			
+		}
 		
 	}
 	

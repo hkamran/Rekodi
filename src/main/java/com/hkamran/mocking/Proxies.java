@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONObject;
 
@@ -53,6 +54,10 @@ public class Proxies {
 	
 	public Integer size() {
 		return proxies.keySet().size();
+	}
+	
+	public Set<Integer> keySet() {
+		return proxies.keySet();
 	}
 	
 	public List<Proxy> getProxies() {
