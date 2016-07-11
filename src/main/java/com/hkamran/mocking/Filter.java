@@ -25,26 +25,23 @@ import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersAdapter;
 import org.littleshoot.proxy.HttpFiltersSourceAdapter;
 
-import com.hkamran.mocking.model.Event;
-import com.hkamran.mocking.model.Payload;
-import com.hkamran.mocking.model.Request;
-import com.hkamran.mocking.model.Response;
-import com.hkamran.mocking.model.Settings;
-import com.hkamran.mocking.websockets.EventSocket;
+import com.hkamran.mocking.servers.WebSocket;
 
 public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyManager {
 
-	private static final int EVENT_MAX_SIZE = 100;
 	private final static Logger log = Logger.getLogger(Filter.class);
 	private static final int MAX_SIZE = 8388608;
 
 	private Tape tape;
 	private Recorder recorder;
 
-	public Settings settings;
-
 	private List<Event> events = new ArrayList<Event>();
 	private Integer counter = 0;
+	
+	public State state = Filter.State.PROXY;
+	public String host = "localhost";
+	public Integer port = 80;
+	public Boolean redirect = true;
 	
 	public static enum State {
 		MOCK, PROXY, RECORD;
@@ -52,7 +49,6 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 
 	public Filter() {
 		this.tape = new Tape();
-		this.settings = new Settings();
 		this.recorder = new Recorder(tape);
 	}
 
@@ -70,8 +66,8 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 				try {
 					if (httpObject instanceof DefaultFullHttpRequest) {
 						DefaultFullHttpRequest httpFullObj = (DefaultFullHttpRequest) httpObject;
-						if (settings.redirect) {
-							httpFullObj.headers().set("Host", settings.host + ":" + settings.port);
+						if (redirect) {
+							httpFullObj.headers().set("Host", host + ":" + port);
 						}
 					}
 				} catch (Exception e) {
@@ -86,7 +82,6 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 			public HttpResponse requestPost(HttpObject httpObject) {
 				try {
 					if (httpObject instanceof DefaultFullHttpRequest) {
-						State state = settings.state;
 
 						DefaultFullHttpRequest httpFullObj = (DefaultFullHttpRequest) httpObject;
 						req = new Request(httpFullObj, state);
@@ -99,7 +94,7 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 							// No need
 						} else if (state == State.MOCK) {
 							HttpResponse response = sendToMock(req, watch);
-							if (!settings.redirect) {
+							if (!redirect) {
 								return handleNoRedirect();
 							}
 							return response;
@@ -107,7 +102,7 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 							// No Need
 						}
 
-						if (!settings.redirect) {
+						if (!redirect) {
 							return handleNoRedirect();
 						}
 
@@ -125,7 +120,7 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 				String content = "";
 				String protocol = "HTTP/1.1";
 				Integer status = 505;
-				State resState = settings.state;
+				State resState = state;
 				Response response = new Response(headers, content, protocol, status, resState);
 				this.res = response;
 				try {
@@ -141,7 +136,6 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 			public HttpObject responsePost(HttpObject httpObject) {
 				try {
 					if (httpObject instanceof DefaultFullHttpResponse) {
-						State state = settings.state;
 
 						DefaultFullHttpResponse httpFullObj = (DefaultFullHttpResponse) httpObject;
 						res = new Response(httpFullObj, state);
@@ -177,10 +171,10 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 	private void addEvent(Integer id, Response res, Request req, StopWatch watch) {
 		Long duration = TimeUnit.MILLISECONDS.toMillis(watch.getTime());
 
-		Event event = new Event(id, req, res, new Date(watch.getStartTime()), duration, settings.state);
+		Event event = new Event(id, req, res, new Date(watch.getStartTime()), duration, state);
 
-		Payload payload = new Payload(id, Payload.Type.EVENT, event);
-		EventSocket.broadcast(payload);
+		Payload payload = new Payload(id, Payload.Action.INSERT, Payload.Type.EVENT, event);
+		WebSocket.broadcast(payload);
 	}
 
 	/**
@@ -220,7 +214,7 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 
 	public void setState(State state) {
 		log.info("State set to " + state.toString());
-		settings.state = state;
+		this.state = state;
 	}
 
 	public Tape getTape() {
@@ -237,30 +231,30 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 	}
 
 	public void setRedirectInfo(String host, Integer port) {
-		settings.host = host;
-		settings.port = port;
-		log.info("Redirecting set to " + settings.host + ":" + settings.port);
+		this.host = host;
+		this.port = port;
+		log.info("Redirecting set to " + host + ":" + port);
 	}
 
 	public void setRedirectState(boolean state) {
 		log.info("Redirecting state: " + state);
-		settings.redirect = state;
+		this.redirect = state;
 	}
 
 	public Boolean getRedirectState() {
-		return settings.redirect;
+		return this.redirect;
 	}
 
 	public String getHost() {
-		return settings.host;
+		return this.host;
 	}
 
 	public Integer getPort() {
-		return settings.port;
+		return this.port;
 	}
 
 	public State getState() {
-		return settings.state;
+		return this.state;
 	}
 
 	public List<Event> getEvents() {
@@ -292,10 +286,27 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 		return MAX_SIZE;
 	}
 	
-	public void setSettings(Settings settings) {
-		this.setState(settings.state);
-		this.setRedirectInfo(settings.host, settings.port);
-		this.setRedirectState(settings.redirect);
+	public JSONObject toJSON() {
+		JSONObject json = new JSONObject();
+		json.put("host", this.host);
+		json.put("port", this.port);
+		json.put("redirect", this.redirect);
+		json.put("state", this.state);
+		return json;
+	}
+	
+	public static Filter parseJSON(String source) {
+		JSONObject json = new JSONObject(source);
+		String host = json.getString("host");
+		Integer port = json.getInt("port");
+		Boolean redirect = json.getBoolean("redirect");
+		State state = State.valueOf(json.getString("state"));
+		
+		Filter filter = new Filter();
+		filter.setRedirectInfo(host, port);
+		filter.setRedirectState(redirect);
+		filter.setState(state);
+		return filter;
 	}
 
 }

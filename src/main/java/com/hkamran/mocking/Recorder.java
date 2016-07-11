@@ -1,10 +1,6 @@
 package com.hkamran.mocking;
 
 import java.io.IOException;
-import java.util.List;
-
-import com.hkamran.mocking.model.Request;
-import com.hkamran.mocking.model.Response;
 
 public class Recorder {
 

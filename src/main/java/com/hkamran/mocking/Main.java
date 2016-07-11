@@ -1,12 +1,10 @@
 package com.hkamran.mocking;
 
-import javax.servlet.ServletException;
-
 import org.apache.log4j.Logger;
 
 import com.hkamran.mocking.Filter.State;
 import com.hkamran.mocking.servers.HTTPServer;
-import com.hkamran.mocking.websockets.EventSocket;
+import com.hkamran.mocking.servers.WebSocket;
 
 /**
  * Hello world!
@@ -31,8 +29,8 @@ public class Main {
 		HTTPServer frontEnd = new HTTPServer();
 //	frontEnd.addFilter("default", filter);
 		
-		ProxyManager proxies = new ProxyManager();
-		Integer id = proxies.add("default", 9090);
+		Proxies proxies = new Proxies();
+		Integer id = proxies.add("Default Service", 9090);
 		Proxy proxy = proxies.get(id);
 		Filter filter = proxy.getFilter();
 		
@@ -46,7 +44,7 @@ public class Main {
 		/**
 		 * Start Program
 		 */
-		EventSocket.setProxyManager(proxies);
+		WebSocket.setProxyManager(proxies);
 		frontEnd.start(8090);
 	}
 }

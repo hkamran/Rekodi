@@ -1,24 +1,27 @@
-package com.hkamran.mocking.model;
+package com.hkamran.mocking;
 
 import org.json.JSONObject;
-
-import com.hkamran.mocking.Proxy;
-import com.hkamran.mocking.Tape;
 
 public class Payload {
 
 	public static enum Type {
-		TAPE, REQUEST, RESPONSE, SETTINGS, NONE, EVENT, PROXY
+		TAPE, REQUEST, RESPONSE, FILTER, NONE, EVENT, PROXY, PROXIES
+	}
+	
+	public static enum Action {
+		UPDATE, DELETE, INSERT
 	}
 	
 	public Type type;
 	public Object obj;
 	public Integer id;
+	public Action action;
 	
-	public Payload(Integer id, Type type, Object obj) {
+	public Payload(Integer id, Action action, Type type, Object obj) {
 		this.type = type;
 		this.obj = obj;
 		this.id = id;
+		this.action = action;
 	}
 	
 	public JSONObject toJSON() {
@@ -26,6 +29,7 @@ public class Payload {
 		JSONObject json = new JSONObject();
 		json.put("type", this.type);
 		json.put("id", id);
+		json.put("action", this.action);
 		
 		JSONObject payload;
 		
@@ -41,16 +45,17 @@ public class Payload {
 		} else if (obj instanceof Tape) {
 			Tape tape = (Tape) obj;
 			payload = tape.toJSON();
-		} else if (obj instanceof Settings) {
-			Settings settings = (Settings) obj;
-			payload = settings.toJSON();
+		} else if (obj instanceof Filter) {
+			Filter filter = (Filter) obj;
+			payload = filter.toJSON();
 		} else if (obj instanceof Proxy) {
 			Proxy proxy = (Proxy) obj;
 			payload = proxy.toJSON();
+		} else if (obj instanceof Proxies) {
+			Proxies proxies = (Proxies) obj;
+			payload = proxies.toJSON();			
 		} else {
-			this.type = Type.NONE;
-			payload = new JSONObject();
-			json.put("type", this.type);
+			throw new RuntimeException("Unable to transform payload to json" + this.obj.getClass());
 		}
 		
 		json.put("message", payload);
@@ -64,6 +69,7 @@ public class Payload {
 		Type type = Type.valueOf(json.getString("type"));
 		String message = json.get("message").toString();
 		Integer id = json.getInt("id");
+		Action action = Action.valueOf(json.getString("action"));
 		
 		Object obj = null;
 		if (type == Type.TAPE) {
@@ -73,19 +79,19 @@ public class Payload {
 			obj = Request.parseJSON(message);
 		} else if (type == Type.RESPONSE) {
 			obj = Response.parseJSON(message);
-		} else if (type == Type.SETTINGS) {
-			obj = Settings.parseJSON(message);
 		} else if (type == Type.PROXY) {
-			obj = Proxy.parseJSON(message);			
+			obj = Proxy.parseJSON(message);	
+		} else if (type == Type.FILTER) {
+			obj = Filter.parseJSON(message);	
 		} else {
-			
+			throw new RuntimeException("Unable to transform payload to obj" + json.toString(2));
 		}
-		Payload payload = new Payload(id, type, obj);
+		Payload payload = new Payload(id, action, type, obj);
 		return payload;	
 	}
 	
-	public static Payload create(Integer id, Type type, Object payload) {
-		return new Payload(id, type, payload);
+	public static Payload create(Integer id, Action action, Type type, Object payload) {
+		return new Payload(id, action, type, payload);
 	}
 	
 }

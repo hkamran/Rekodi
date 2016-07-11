@@ -1,4 +1,4 @@
-package com.hkamran.mocking.model;
+package com.hkamran.mocking;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -6,7 +6,6 @@ import java.util.Date;
 
 import org.json.JSONObject;
 
-import com.hkamran.mocking.Filter;
 import com.hkamran.mocking.Filter.State;
 
 

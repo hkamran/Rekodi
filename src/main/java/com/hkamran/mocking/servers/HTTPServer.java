@@ -21,7 +21,6 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
@@ -29,18 +28,15 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.websocket.jsr356.server.ServerContainer;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
-import org.eclipse.jetty.websocket.server.WebSocketHandler;
-import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.hkamran.mocking.Event;
 import com.hkamran.mocking.Filter;
+import com.hkamran.mocking.Request;
 import com.hkamran.mocking.Tape;
-import com.hkamran.mocking.model.Event;
-import com.hkamran.mocking.model.Request;
-import com.hkamran.mocking.websockets.EventSocket;
 
 @Path("/")
 public class HTTPServer {
@@ -139,13 +135,13 @@ public class HTTPServer {
 			// error
 		}
 
-		List<com.hkamran.mocking.model.Response> responses = tape
+		List<com.hkamran.mocking.Response> responses = tape
 				.getResponses(request);
 		if (responseID < 0 || responseID >= responses.size()) {
 			// error
 		}
 
-		com.hkamran.mocking.model.Response response = responses.get(responseID);
+		com.hkamran.mocking.Response response = responses.get(responseID);
 		JSONObject responseJSON = response.toJSON();
 
 		return Response
@@ -294,11 +290,11 @@ public class HTTPServer {
 			@PathParam("responseID") Integer responseID, final String json) {
 
 		try {
-			com.hkamran.mocking.model.Response response = com.hkamran.mocking.model.Response
+			com.hkamran.mocking.Response response = com.hkamran.mocking.Response
 					.parseJSON(json);
 			Filter filter = filters.get(proxyName);
 			Request request = filter.getTape().getRequest(requestID);
-			List<com.hkamran.mocking.model.Response> responses = filter.getTape()
+			List<com.hkamran.mocking.Response> responses = filter.getTape()
 					.getResponses(request);
 
 			responses.set(responseID, response);
@@ -386,7 +382,7 @@ public class HTTPServer {
 		ResourceConfig config = new ResourceConfig();
 		Set<Class<?>> s = new HashSet<Class<?>>();
         s.add(HTTPServer.class);
-        s.add(EventSocket.class);
+        s.add(WebSocket.class);
 		config.registerClasses(s);
 		
 		Server server = new Server(port);
@@ -418,7 +414,7 @@ public class HTTPServer {
 	    server.setHandler(handlers);
 	    
         ServerContainer container = WebSocketServerContainerInitializer.configureContext(wsHandler); 
-        container.addEndpoint(EventSocket.class); 
+        container.addEndpoint(WebSocket.class); 
         
 		try {
             server.start();

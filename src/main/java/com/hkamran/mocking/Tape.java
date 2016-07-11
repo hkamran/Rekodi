@@ -14,25 +14,12 @@ import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.hkamran.mocking.model.Request;
-import com.hkamran.mocking.model.Response;
-import com.hkamran.mocking.model.Request.MATCHTYPE;
+import com.hkamran.mocking.Request.MATCHTYPE;
 
 public class Tape {
 
 	private final static Logger log = Logger.getLogger(Tape.class);
 	private Map<Request, List<Response>> tape = Collections.synchronizedMap(new HashMap<Request, List<Response>>());
-	
-	public static class Constants {
-		public static final String MATCHED_STRING = "matchedString";
-		public static final String MATCH_TYPE = "matchType";
-		public static final String STATUS = "status";
-		public static final String URI = "uri";
-		public static final String METHOD = "method";
-		public static final String CONTENT = "content";
-		public static final String PROTOCOL = "protocol";
-		public static final String TYPE = "type";
-	}
 
 	public void put(Request request, Response response) {
 		if (!tape.containsKey(request)) {

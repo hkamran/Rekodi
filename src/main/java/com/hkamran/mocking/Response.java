@@ -1,4 +1,4 @@
-package com.hkamran.mocking.model;
+package com.hkamran.mocking;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
@@ -18,7 +18,6 @@ import java.util.Map.Entry;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONObject;
 
-import com.hkamran.mocking.Filter;
 import com.hkamran.mocking.Filter.State;
 import com.hkamran.mocking.util.Formatter;
 

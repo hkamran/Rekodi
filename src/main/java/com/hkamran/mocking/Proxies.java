@@ -7,31 +7,44 @@ import java.util.Map;
 
 import org.json.JSONObject;
 
-public class ProxyManager {
+public class Proxies {
 	private static Integer count = 0;
 	Map<Integer, Proxy> proxies = new HashMap<Integer, Proxy>();
 	
 	public Integer add(String name, Integer port) {
-		Integer id = count;
-		Proxy proxy = new Proxy(id, name, port);
-		proxies.put(id, proxy);
-		
-		count = count + 1;
-		proxy.start();
-		return id;
+		try {
+			Integer id = count;
+			Proxy proxy = new Proxy(id, name, port);
+			proxy.start();
+			proxies.put(id, proxy);
+			count = count + 1;
+			return id;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return -1;
 	}
 	
 	public JSONObject toJSON() {
 		JSONObject json = new JSONObject();
-		for (Integer id : proxies.keySet()) {
-			Proxy proxy = proxies.get(id);
-			json.put(id.toString(), proxy.toJSON());
+		for (Integer key : this.proxies.keySet()) {
+			Proxy proxy = this.proxies.get(key);
+			json.put(key.toString(), proxy.toJSON());
 		}
 		return json;
 	}
 	
 	public void remove(Integer id) {
-		proxies.remove(id);
+		Proxy proxy = this.get(id);
+		if (proxy == null) {
+			return;
+		}
+		try {
+			proxy.stop();
+			proxies.remove(id);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public Proxy get(Integer id) {
@@ -46,4 +59,5 @@ public class ProxyManager {
 		}
 		return proxies;
 	}
+	
 }
