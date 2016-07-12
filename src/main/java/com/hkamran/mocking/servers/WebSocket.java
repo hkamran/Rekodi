@@ -132,11 +132,11 @@ public class WebSocket {
 					curProxy.start();
 				}
 				
-				Payload proxies = Payload.create(curProxy.id, 
+				Payload proxyPayload = Payload.create(curProxy.id, 
 						Payload.Action.UPDATE, 
-						Payload.Type.PROXIES, WebSocket.proxies);
+						Payload.Type.PROXY, curProxy);
 				
-				WebSocket.broadcast(proxies);
+				WebSocket.broadcast(proxyPayload);
 				log.info("Updating proxy " + curProxy.id + " to " + curProxy.name + ":" + curProxy.port);
 				
 				return;
