@@ -229,6 +229,10 @@ html, body {
     filter: brightness(118%);
 }
 
+.subnav.button a:link,a:visited,a:hover,a:active {
+    color: #c5c5c5;
+}
+
 .editing {
     font-size: 9pt;
 }
@@ -284,4 +288,32 @@ html, body {
     font-size: 10pt;
     box-sizing: border-box;
 
+}
+
+.version {
+    position: absolute;
+    right: 5px;
+    top: 24px;
+    padding: 5px;
+    color: #666;
+    font-size: 7pt;
+    font-family: Verdana, Arial;
+}
+
+.header.icons {
+    position: absolute;
+    right: 5px;
+    top: 2px;
+    padding: 5px;
+
+}
+
+.header.icons a {
+    color: #999;
+    cursor:pointer;
+}
+
+.header.icons a:hover {
+    color: #bbb;
+    cursor:pointer;
 }

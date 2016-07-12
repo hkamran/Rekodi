@@ -29,25 +29,35 @@
         	var $this = this;
 
 			this.$el.mouseenter(function(){
-				var title = $(this).attr('title'),
-					tooltip = $('<div class="tiptop"></div>').text(title);
+				var title = $(this).attr('data-title'),
+					tooltip = $('<div class="tiptop" style="position: absolute; top:0px"></div>').text(title);
 				tooltip.appendTo('body');
-				$(this).data('title', title).removeAttr('title');
+				$(this).data('data-title', title);
+
+				$(this).click(function() {
+					tooltip = $('.tiptop');
+					var title = $(this).attr('data-title');
+					tooltip.text(title);
+				});
+
 			}).mouseleave(function(){
 				$('.tiptop').remove();
-				$(this).attr('title', $(this).data('title'));
 			}).mousemove(function(e) {
+
 				var tooltip = $('.tiptop'),
 					top = e.pageY + $this.options.offsetVertical,
 					bottom = 'auto'
-					left = e.pageX + $this.options.offsetHorizontal,
+				left = e.pageX + $this.options.offsetHorizontal,
 					right = 'auto';
+
+				var title = $(this).attr('data-title');
+				tooltip.text(title);
 
 				if(top + tooltip.outerHeight() >= $(window).scrollTop() + $(window).height()){
 					bottom = $(window).height() - top + ($this.options.offsetVertical * 2);
 					top = 'auto';
 				}
-				if(left + tooltip.outerWidth() >= $(window).width()){
+				if(left + tooltip.outerWidth() + tooltip.width() >= $(window).width()){
 					right = $(window).width() - left + ($this.options.offsetHorizontal * 2);
 					left = 'auto';
 				}
