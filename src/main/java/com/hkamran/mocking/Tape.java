@@ -152,11 +152,11 @@ public class Tape {
 
 
 			Request request = Request.parseJSON(mockedCall.getJSONObject("request").toString());
-			JSONObject responsesJSON = mockedCall.getJSONObject("responses");
+			JSONArray responsesJSON = mockedCall.getJSONArray("responses");
 			Integer length = responsesJSON.length();
 
 			for (Integer index = 0; index < length; index++) {
-				JSONObject responseJSON = responsesJSON.getJSONObject(index.toString());
+				JSONObject responseJSON = responsesJSON.getJSONObject(index);
 				Response response = Response.parseJSON(responseJSON.toString());
 				tape.put(request, response);
 			}

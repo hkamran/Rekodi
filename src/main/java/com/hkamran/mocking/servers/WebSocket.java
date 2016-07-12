@@ -121,24 +121,23 @@ public class WebSocket {
 			} else if (payload.action == Payload.Action.UPDATE) {
 				Proxy curProxy = WebSocket.proxies.get(proxy.id);
 				
-				String name = curProxy.name;
-				Integer port = curProxy.port;
+				String name = proxy.name;
+				Integer port = proxy.port;
 				
 				curProxy.name = name;
 				
-				if (port != curProxy.port) {
+				if (port.intValue() != curProxy.port.intValue()) {
 					curProxy.port = port;
 					curProxy.stop();
 					curProxy.start();
-					
 				}
 				
-				Payload proxies = Payload.create(-1, 
+				Payload proxies = Payload.create(curProxy.id, 
 						Payload.Action.UPDATE, 
 						Payload.Type.PROXIES, WebSocket.proxies);
 				
 				WebSocket.broadcast(proxies);
-				log.info("Creating proxy " + curProxy.id + ":" + curProxy.name);
+				log.info("Updating proxy " + curProxy.id + " to " + curProxy.name + ":" + curProxy.port);
 				
 				return;
 			}

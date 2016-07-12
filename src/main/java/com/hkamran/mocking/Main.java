@@ -45,6 +45,7 @@ public class Main {
 		 * Start Program
 		 */
 		WebSocket.setProxyManager(proxies);
+		HTTPServer.setProxyManager(proxies);
 		frontEnd.start(8090);
 	}
 }
