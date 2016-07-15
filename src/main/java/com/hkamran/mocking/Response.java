@@ -106,7 +106,7 @@ public class Response {
 		this.id = id;
 	}
 	
-	public Integer getId() {
+	public int getId() {
 		return this.id;
 	}
 

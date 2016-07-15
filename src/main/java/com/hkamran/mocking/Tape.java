@@ -54,6 +54,7 @@ public class Tape {
 		}
 		return null;
 	}
+
 	
 	public void setRequest(String hashCode, Request request) {
 		Request original = getRequest(hashCode);
@@ -120,6 +121,10 @@ public class Tape {
 	public List<Response> getResponses(String hashCode) {
 		Request request = getRequest(hashCode);
 		return tape.get(request);
+	}
+	
+	public void setResponses(Request request, List<Response> responses) {
+		tape.put(request, responses);
 	}
 
 	public JSONObject toJSON() {

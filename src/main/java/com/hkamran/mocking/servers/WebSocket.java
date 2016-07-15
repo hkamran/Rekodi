@@ -172,6 +172,39 @@ public class WebSocket {
 					Payload.Action.UPDATE, 
 					Payload.Type.RESPONSE, response);
 			WebSocket.broadcast(updatedResponse);
+			
+		} else if (payload.action == Payload.Action.DELETE) {
+			try {
+				Response response = (Response) payload.obj;
+				
+				Integer id = payload.id;
+				Proxy proxy = proxies.get(id);
+				Filter filter = proxy.getFilter();
+				Tape tape = filter.getTape();
+				
+				Request request = tape.getRequest(response.getParent().toString());
+				
+				List<Response> responses = tape.getResponses(request);
+				
+				Response result = responses.remove(response.getId());
+				
+				int counter = 0;
+				for (Response res : responses) {
+					res.setId(counter++);
+				}
+				
+				Payload updateTape = Payload.create(id, 
+						Payload.Action.UPDATE, 
+						Payload.Type.TAPE, filter.getTape());
+				WebSocket.broadcast(updateTape);
+				
+				Payload deleteResponse = Payload.create(id, 
+						Payload.Action.DELETE, 
+						Payload.Type.RESPONSE, result);
+				WebSocket.broadcast(deleteResponse);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -197,6 +230,23 @@ public class WebSocket {
 					Payload.Action.UPDATE, 
 					Payload.Type.REQUEST, request);
 			WebSocket.broadcast(updatedRequest);
+		} else if (payload.action == Payload.Action.DELETE) {
+			Request request = (Request) payload.obj;
+			Integer id = payload.id;
+			Proxy proxy = proxies.get(id);
+			Filter filter = proxy.getFilter();
+			
+			filter.getTape().remove(request);
+			
+			Payload updateTape = Payload.create(id, 
+					Payload.Action.UPDATE, 
+					Payload.Type.TAPE, filter.getTape());
+			WebSocket.broadcast(updateTape);
+			
+			Payload deleteRequest = Payload.create(id, 
+					Payload.Action.DELETE, 
+					Payload.Type.REQUEST, request);
+			WebSocket.broadcast(deleteRequest);
 		}
 	}
 
