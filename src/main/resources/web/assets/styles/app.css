@@ -1,0 +1,1610 @@
+/* BASICS */
+
+.CodeMirror {
+  /* Set height, width, borders, and global font properties here */
+  font-family: monospace;
+  height: 100%;
+  width: 100%;
+  color: black;
+}
+
+/* PADDING */
+
+.CodeMirror-lines {
+  padding: 4px 0;
+  /* Vertical padding around content */
+}
+
+.CodeMirror pre {
+  padding: 0 4px;
+  /* Horizontal padding of content */
+}
+
+.CodeMirror-scrollbar-filler,
+.CodeMirror-gutter-filler {
+  background-color: white;
+  /* The little square between H and V scrollbars */
+}
+
+/* GUTTER */
+
+.CodeMirror-gutters {
+  border-right: 1px solid #ddd;
+  background-color: #f7f7f7;
+  white-space: nowrap;
+}
+
+
+
+.CodeMirror-linenumber {
+  padding: 0 3px 0 5px;
+  min-width: 20px;
+  text-align: right;
+  color: #999;
+  white-space: nowrap;
+}
+
+.CodeMirror-guttermarker {
+  color: black;
+}
+
+.CodeMirror-guttermarker-subtle {
+  color: #999;
+}
+
+/* CURSOR */
+
+.CodeMirror-cursor {
+  border-left: 1px solid black;
+  border-right: none;
+  width: 0;
+}
+
+/* Shown when moving in bi-directional text */
+
+.CodeMirror div.CodeMirror-secondarycursor {
+  border-left: 1px solid silver;
+}
+
+.cm-fat-cursor .CodeMirror-cursor {
+  width: auto;
+  border: 0 !important;
+  background: #7e7;
+}
+
+.cm-fat-cursor div.CodeMirror-cursors {
+  z-index: 1;
+}
+
+.cm-animate-fat-cursor {
+  width: auto;
+  border: 0;
+  -webkit-animation: blink 1.06s steps(1) infinite;
+  -moz-animation: blink 1.06s steps(1) infinite;
+  animation: blink 1.06s steps(1) infinite;
+  background-color: #7e7;
+}
+
+@-moz-keyframes blink {
+  0% {
+
+  }
+
+  50% {
+    background-color: transparent;
+  }
+
+  100% {
+
+  }
+}
+
+@-webkit-keyframes blink {
+  0% {
+
+  }
+
+  50% {
+    background-color: transparent;
+  }
+
+  100% {
+
+  }
+}
+
+@keyframes blink {
+  0% {
+
+  }
+
+  50% {
+    background-color: transparent;
+  }
+
+  100% {
+
+  }
+}
+
+/* Can style cursor different in overwrite (non-insert) mode */
+
+
+
+.cm-tab {
+  display: inline-block;
+  text-decoration: inherit;
+}
+
+.CodeMirror-ruler {
+  border-left: 1px solid #ccc;
+  position: absolute;
+}
+
+/* DEFAULT THEME */
+
+.cm-s-default .cm-header {
+  color: blue;
+}
+
+.cm-s-default .cm-quote {
+  color: #090;
+}
+
+.cm-negative {
+  color: #d44;
+}
+
+.cm-positive {
+  color: #292;
+}
+
+.cm-header,
+.cm-strong {
+  font-weight: bold;
+}
+
+.cm-em {
+  font-style: italic;
+}
+
+.cm-link {
+  text-decoration: underline;
+}
+
+.cm-strikethrough {
+  text-decoration: line-through;
+}
+
+.cm-s-default .cm-keyword {
+  color: #708;
+}
+
+.cm-s-default .cm-atom {
+  color: #219;
+}
+
+.cm-s-default .cm-number {
+  color: #450a0b;
+}
+
+.cm-s-default .cm-def {
+  color: #00f;
+}
+
+
+
+.cm-s-default .cm-variable-2 {
+  color: #05a;
+}
+
+.cm-s-default .cm-variable-3 {
+  color: #085;
+}
+
+.cm-s-default .cm-comment {
+  color: #a50;
+}
+
+.cm-s-default .cm-string {
+  color: #a11;
+}
+
+.cm-s-default .cm-string-2 {
+  color: #f50;
+}
+
+.cm-s-default .cm-meta {
+  color: #555;
+}
+
+.cm-s-default .cm-qualifier {
+  color: #555;
+}
+
+.cm-s-default .cm-builtin {
+  color: #30a;
+}
+
+.cm-s-default .cm-bracket {
+  color: #997;
+}
+
+.cm-s-default .cm-tag {
+  color: #170;
+}
+
+.cm-s-default .cm-attribute {
+  color: #00c;
+}
+
+.cm-s-default .cm-hr {
+  color: #999;
+}
+
+.cm-s-default .cm-link {
+  color: #00c;
+}
+
+.cm-s-default .cm-error {
+  color: #f00;
+}
+
+.cm-invalidchar {
+  color: #f00;
+}
+
+.CodeMirror-composing {
+  border-bottom: 2px solid;
+}
+
+/* Default styles for common addons */
+
+div.CodeMirror span.CodeMirror-matchingbracket {
+  color: #0f0;
+}
+
+div.CodeMirror span.CodeMirror-nonmatchingbracket {
+  color: #f22;
+}
+
+.CodeMirror-matchingtag {
+  background: rgba(255, 150, 0, .3);
+}
+
+.CodeMirror-activeline-background {
+  background: #e8f2ff;
+}
+
+/* STOP */
+
+/* The rest of this file contains styles related to the mechanics of
+   the editor. You probably shouldn't touch them. */
+
+.CodeMirror {
+  position: relative;
+  overflow: hidden;
+  background: white;
+}
+
+.CodeMirror-scroll {
+  overflow: scroll !important;
+  /* Things will break if this is overridden */
+  /* 30px is the magic margin used to hide the element's real scrollbars */
+  /* See overflow: hidden in .CodeMirror */
+  margin-bottom: -30px;
+  margin-right: -30px;
+  padding-bottom: 30px;
+  height: 100%;
+  outline: none;
+  /* Prevent dragging from highlighting the element */
+  position: relative;
+}
+
+.CodeMirror-sizer {
+  position: relative;
+  border-right: 30px solid transparent;
+}
+
+/* The fake, visible scrollbars. Used to force redraw during scrolling
+   before actual scrolling happens, thus preventing shaking and
+   flickering artifacts. */
+
+.CodeMirror-vscrollbar,
+.CodeMirror-hscrollbar,
+.CodeMirror-scrollbar-filler,
+.CodeMirror-gutter-filler {
+  position: absolute;
+  z-index: 6;
+  display: none;
+}
+
+.CodeMirror-vscrollbar {
+  right: 0;
+  top: 0;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+.CodeMirror-hscrollbar {
+  bottom: 0;
+  left: 0;
+  overflow-y: hidden;
+  overflow-x: scroll;
+}
+
+.CodeMirror-scrollbar-filler {
+  right: 0;
+  bottom: 0;
+}
+
+.CodeMirror-gutter-filler {
+  left: 0;
+  bottom: 0;
+}
+
+.CodeMirror-gutters {
+  position: absolute;
+  left: 0;
+  top: 0;
+  min-height: 100%;
+  z-index: 3;
+}
+
+.CodeMirror-gutter {
+  white-space: normal;
+  height: 100%;
+  display: inline-block;
+  vertical-align: top;
+  margin-bottom: -30px;
+  /* Hack to make IE7 behave */
+  *zoom: 1;
+  *display: inline;
+}
+
+.CodeMirror-gutter-wrapper {
+  position: absolute;
+  z-index: 4;
+  background: none !important;
+  border: none !important;
+}
+
+.CodeMirror-gutter-background {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 4;
+}
+
+.CodeMirror-gutter-elt {
+  position: absolute;
+  cursor: default;
+  z-index: 4;
+}
+
+.CodeMirror-gutter-wrapper {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+.CodeMirror-lines {
+  cursor: text;
+  min-height: 1px;
+  /* prevents collapsing before first draw */
+}
+
+.CodeMirror pre {
+  /* Reset some styles that the rest of the page might have set */
+  -moz-border-radius: 0;
+  -webkit-border-radius: 0;
+  border-radius: 0;
+  border-width: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  margin: 0;
+  white-space: pre;
+  word-wrap: normal;
+  line-height: inherit;
+  color: inherit;
+  z-index: 2;
+  position: relative;
+  overflow: visible;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-variant-ligatures: none;
+  font-variant-ligatures: none;
+}
+
+.CodeMirror-wrap pre {
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  word-break: normal;
+}
+
+.CodeMirror-linebackground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 0;
+}
+
+.CodeMirror-linewidget {
+  position: relative;
+  z-index: 2;
+  overflow: auto;
+}
+
+
+
+.CodeMirror-code {
+  outline: none;
+}
+
+/* Force content-box sizing for the elements where we expect it */
+
+.CodeMirror-scroll,
+.CodeMirror-sizer,
+.CodeMirror-gutter,
+.CodeMirror-gutters,
+.CodeMirror-linenumber {
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
+}
+
+.CodeMirror-measure {
+  position: absolute;
+  width: 100%;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+.CodeMirror-cursor {
+  position: absolute;
+}
+
+.CodeMirror-measure pre {
+  position: static;
+}
+
+div.CodeMirror-cursors {
+  visibility: hidden;
+  position: relative;
+  z-index: 3;
+}
+
+div.CodeMirror-dragcursors {
+  visibility: visible;
+}
+
+.CodeMirror-focused div.CodeMirror-cursors {
+  visibility: visible;
+}
+
+.CodeMirror-selected {
+  background: #d9d9d9;
+}
+
+.CodeMirror-focused .CodeMirror-selected {
+  background: #d7d4f0;
+}
+
+.CodeMirror-crosshair {
+  cursor: crosshair;
+}
+
+.CodeMirror-line::selection,
+.CodeMirror-line > span::selection,
+.CodeMirror-line > span > span::selection {
+  background: #d7d4f0;
+}
+
+.CodeMirror-line::-moz-selection,
+.CodeMirror-line > span::-moz-selection,
+.CodeMirror-line > span > span::-moz-selection {
+  background: #d7d4f0;
+}
+
+.cm-searching {
+  background: #ffa;
+  background: rgba(255, 255, 0, .4);
+}
+
+/* IE7 hack to prevent it from returning funny offsetTops on the spans */
+
+.CodeMirror span {
+  *vertical-align: text-bottom;
+}
+
+/* Used to force a border model for a node */
+
+.cm-force-border {
+  padding-right: .1px;
+}
+
+@media print {
+  /* Hide the cursor when printing */
+
+  .CodeMirror div.CodeMirror-cursors {
+    visibility: hidden;
+  }
+}
+
+/* See issue #2901 */
+
+.cm-tab-wrap-hack:after {
+  content: '';
+}
+
+/* Help users use markselection to safely style text background */
+
+span.CodeMirror-selectedtext {
+  background: none;
+}
+.tab.wrapper {
+  float: left;
+  z-index: 10;
+  position: relative;
+  height: 100%;
+  cursor: pointer;
+}
+
+.tab.top.border.selected {
+  height: 23px;
+  border-left: 1px solid #858585;
+  border-right: 1px solid #858585;
+  padding-top: 1px;
+}
+
+.tab.top.container.items {
+  background: #dddddd none repeat scroll 0 0;
+  border-right: 0 solid #d5d5d5;
+  border-top: 1px solid #c9c9c9;
+  padding: 0;
+  box-sizing: border-box;
+  height: 100%;
+}
+
+.tab.top.container.item {
+  float: left;
+  height: 100%;
+  border-left: 1px solid #b2b2b2;
+  border-top: 1px solid #efefef;
+  border-bottom: 1px solid #d7d7d7;
+  border-right: 1px solid #eaeaea;
+  box-sizing: border-box;
+  width: 30px;
+}
+
+.tab.top.container.item:hover {
+  background: #ececec;
+}
+
+.tab.text {
+  font-size: 9pt;
+  color: #6f6f6f;
+  line-height: 22px;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-weight: 400;
+}
+
+.tab.top.container.selected {
+  height: 100%;
+  background: #dddddd;
+  border-top: 1px solid #efefef;
+  box-sizing: border-box;
+  border-right: 1px solid #efefef;
+}
+
+.tab.bottom.selected {
+  background: #dddddd;
+  height: 5px;
+  width: 100%;
+}
+
+.tab.top.border.unselected {
+  height: 100%;
+  border-right: 1px solid #858585;
+  padding-top: 1px;
+  border-Bottom: 1px solid #858585;
+}
+
+.tab.top.container.unselected {
+  background: #dddddd none repeat scroll 0 0;
+  border-right: 1px solid #efefef;
+  border-top: 1px solid #efefef;
+  box-sizing: border-box;
+  height: 22px;
+}
+
+.tab.top.container.unselected:hover {
+  background: #ececec;
+}
+
+.tab.bottom.unselected {
+  background: #d9d9d9;
+  border-top: 1px solid #f5f5f5;
+  height: 4px;
+  width: 100%;
+}
+
+.tab.bg {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  left: 0px;
+}
+
+.tab.bg .border {
+  border-bottom: 1px solid #858585;
+  height: 23px;
+  width: 100%;
+}
+
+.tab.bg .container {
+  height: 100%;
+  background: #b5b5b5;
+  border-top: 2px solid #c9c9c9;
+  border-bottom: 1px solid #afafaf;
+  box-sizing: border-box;
+}
+
+.tab.bg .bottom {
+  background: #d9d9d9;
+  border-top: 1px solid #f5f5f5;
+  height: 4px;
+  width: 100%;
+}
+html,
+body {
+  margin: 0px;
+  padding: 0px;
+  font-family: Helvetica, Arial, sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  height: 100%;
+}
+
+.breaker {
+  background: #454545 none repeat scroll 0 0;
+  border-top: 1px solid #585858;
+  height: 3px;
+  border-bottom: 1px solid #353535;
+}
+
+.main {
+  top: 80px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  position: absolute;
+  background: #dbdbdb;
+}
+
+.main .container {
+  padding: 10px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  left: 61px;
+  bottom: 0px;
+  border-top: 1px solid #fff;
+  border-left: 1px solid #fff;
+}
+
+.main .content {
+  background: #dbdbdb;
+  height: 100%;
+  width: 100%;
+}
+
+.splitter.vertical {
+  height: 10px;
+  cursor: row-resize;
+}
+
+.splitter.vertical.grabber {
+  height: 100%;
+  background: #a1a1a1;
+  width: 70px;
+  margin: 0 auto;
+}
+
+.splitter.vertical:hover .grabber {
+  background: #91a18e;
+}
+
+.splitter.vertical:hover {
+  background: #cbdbc6;
+}
+
+.splitter.horizontal {
+  width: 10px;
+  height: 100%;
+  cursor: col-resize;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  float: left;
+  min-height: 88px;
+}
+
+.splitter.horizontal.grabber {
+  flex: 0 1 70px;
+  background: #a1a1a1;
+  width: 100%;
+}
+
+.splitter.horizontal:hover .grabber {
+  background: #91a18e;
+}
+
+.splitter.horizontal:hover {
+  background: #cbdbc6;
+}
+
+.subnav {
+  width: 60px;
+  height: 100%;
+  float: left;
+  background: #454545;
+  border-right: 1px solid #343434;
+}
+
+.subnav ul {
+  text-align: left;
+  list-style: none;
+  margin: 0px;
+  padding: 0px;
+}
+
+.subnav ul li {
+  height: 60px;
+  background: #4b4b4b;
+  border-top: 1px solid #676767;
+  border-left: 1px solid #575757;
+  line-height: 55px;
+  font-size: 16pt;
+  box-sizing: border-box;
+  border-right: 1px solid #404040;
+  border-bottom: 1px solid #3b3b3b;
+  text-align: center;
+  color: #c5c5c5;
+}
+
+.button {
+  cursor: pointer;
+}
+
+.subnav ul li:hover {
+  background: #565656;
+}
+
+.subnav .resizer {
+  height: 10px;
+  background: #353535;
+  border: 0px;
+  border-right: 1px solid #2f2f2f;
+  background-image: url("/assets/images/subnav_arrow_back.png");
+  background-repeat: no-repeat;
+  background-position: 94% 37%;
+}
+
+.example-enter {
+  opacity: 1;
+  background: #c6e8a5;
+}
+
+.example-enter.example-enter-active {
+  opacity: 1;
+  background: #fff;
+  transition: background-color 300ms ease-in;
+}
+
+.example-leave {
+  opacity: 1;
+}
+
+.example-leave.example-leave-active {
+  opacity: 0.01;
+  transition: background-color 800ms ease-out 1s;
+}
+
+.http.method {
+  font-family: Arial,sans-serif;
+  padding: 2px;
+  font-size: 9pt;
+  font-weight: 700;
+}
+
+.http.state {
+  font-family: sans-serif;
+  padding: 2px;
+  font-size: 9pt;
+  font-weight: 700;
+}
+
+.http.uri {
+  font-family: sans-serif;
+  font-size: 9pt;
+}
+
+.http.uri {
+  font-size: 13pt;
+  font-family: Arial, sans-serif;
+  font-size: 9pt;
+}
+
+.http.label {
+  background: #f4f4f4 none repeat scroll 0 0;
+  border: 1px solid #c6c2c9;
+  display: inline-block;
+  padding: 5px 8px;
+  text-decoration: none;
+}
+
+.http.label:hover {
+  background: #e4f4de;
+  border: 1px solid #c4dac0;
+}
+
+.http.label.highlight {
+  background: #e4f4de;
+  border: 1px solid #c4dac0;
+}
+
+.subnav ul li:hover {
+  background: #565656;
+}
+
+.subnav ul li img {
+  margin-top: 12px;
+  user-select: none;
+  -ms-user-select: none;
+  /* IE 10+ */
+  -moz-user-select: none;
+  /* Firefox all */
+  -webkit-user-select: none;
+  /* Chrome all / Safari all */
+}
+
+.subnav ul li:hover img {
+  -webkit-filter: brightness(118%);
+  filter: brightness(118%);
+}
+
+.subnav.button a:link,
+a:visited,
+a:hover,
+a:active {
+  color: #c5c5c5;
+}
+
+.editing {
+  font-size: 9pt;
+}
+
+.settings {
+  background: #f8f8f8 none repeat scroll 0 0;
+  border: 1px solid #b3b3b3;
+  box-sizing: border-box;
+  left: 0;
+  margin: 0 auto;
+  max-width: 400px;
+  padding: 10px 15px 15px;
+  position: absolute;
+  right: 0;
+  top: 25%;
+  width: 80%;
+  z-index: 1000;
+  box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.25);
+}
+
+.settings a {
+  color: #4b4b4b;
+}
+
+.settings label {
+  color: #696969;
+  display: block;
+  font-size: 0.77778rem;
+  font-weight: normal;
+  line-height: 0;
+  margin-top: 15px;
+  text-align: left;
+  position: relative;
+  text-align: left;
+}
+
+.settings label input {
+  background: #ffffff none repeat scroll 0 0;
+  border: 1px solid #b5b5b5;
+  box-sizing: border-box;
+  color: #5e5e5e;
+  display: inline-block;
+  margin-top: 12px;
+  padding: 5px;
+  width: 100%;
+}
+
+.settings .button {
+  padding: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  float: right;
+  display: inline-block;
+  background: #dddddd;
+  border: 1px solid #c4c4c4;
+  color: #535353;
+  font-size: 10pt;
+  box-sizing: border-box;
+}
+
+.settings .button:hover {
+  background: #eee;
+}
+
+.version {
+  position: absolute;
+  right: 5px;
+  top: 24px;
+  padding: 5px;
+  color: #666;
+  font-size: 7pt;
+  font-family: Verdana, Arial;
+}
+
+.header.icons {
+  position: absolute;
+  right: 5px;
+  top: 2px;
+  padding: 5px;
+}
+
+.header.icons a {
+  color: #a6a5a5;
+  cursor: pointer;
+}
+
+.header.icons a:hover {
+  color: #c8c8c8;
+  cursor: pointer;
+}
+
+.header.dropdown {
+  position: relative;
+  top: 1px;
+  left: -1px;
+  border: 1px solid #8a8a8a;
+  display: none;
+  background: #e6e6e6  url("/assets/images/dropdown_bg.png") repeat-x scroll 0 0;
+  -webkit-box-shadow: 3px 6px 5px -1px rgba(0,0,0,0.13);
+  -moz-box-shadow: 3px 6px 5px -1px rgba(0,0,0,0.13);
+  box-shadow: 3px 6px 5px -1px rgba(0,0,0,0.13);
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.header.dropdown .inset {
+  height: 100%;
+  width: 100%;
+  padding-top: 3px;
+  box-sizing: border-box;
+}
+
+.header.dropdown ul {
+  padding: 0px;
+  margin: 0px;
+  list-style-type: none;
+  max-width: 200px;
+  min-width: 120px;
+  display: inline-block;
+}
+
+.header .dropdown.trigger:hover .header.dropdown {
+  display: inline-block;
+}
+
+.header.dropdown li:first-child {
+  border-top: 0px;
+}
+
+.header.dropdown li:last-child {
+  border-bottom: 0px;
+}
+
+.header.dropdown li {
+  border-top: 1px solid #edecec;
+  border-bottom: 1px solid #b9b9b9;
+  font-size: 9pt;
+  color: #6f6f6f;
+  padding: 5px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header.dropdown li:hover {
+  background: #ececec;
+}
+/* The switch - the box around the slider */
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+
+.switch input {
+  display: none;
+}
+
+/* The slider */
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+.table {
+  display: table !important;
+  table-layout: fixed;
+}
+
+.row {
+  display: table-row !important;
+}
+
+.cell {
+  display: table-cell !important;
+}
+
+.grow.width {
+  width: 100% !important;
+}
+
+.grow.height {
+  height: 100% !important;
+}
+
+.grow.width.auto {
+  width: auto;
+}
+
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
+}
+
+.padding {
+  padding: 10px;
+}
+
+.window .content table {
+  flex: 1;
+}
+
+table {
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+#tBody td {
+  border-right: 1px solid #dcdcdc;
+  border-bottom: 1px solid #dcdcdc;
+  box-sizing: border-box;
+  font-family: Arial;
+  font-size: 9pt;
+  padding: 9px;
+}
+
+/* SCROLL TABLE ESSENTIALS (+ SOME ADDITIONAL CSS): */
+
+div#scrollTableContainer {
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  position: absolute;
+  overflow: hidden;
+}
+
+.touchScreen div#scrollTableContainer {
+  width: 600px;
+  /* touch devices do not form scrollbars (= 17 px wide) */
+}
+
+#tHeadContainer {
+  height: 31px;
+  border-bottom: 1px solid #999;
+}
+
+#tBodyContainer {
+  height: calc(100% - 29px);
+  overflow-y: scroll;
+}
+
+#tHeadContainer td {
+  text-align: left;
+  font-weight: 400;
+  font-family: Arial;
+  font-size: 8pt;
+  box-sizing: border-box;
+  color: #727272;
+  border-right: 1px solid #a9a9a9;
+  padding-left: 10px;
+}
+
+#tHeadContainer td:last-child {
+  border-right: 0px;
+  min-width: 147px;
+  /* add 17 */
+}
+
+.touchScreen #tBodyContainer {
+  -webkit-overflow-scrolling: touch;
+  /* smooths scrolling on touch screens */
+}
+
+/* FINER LAYOUT MATTERS: */
+
+tr:first-child td {
+  border-top: 0;
+}
+
+#tBody tr.lastRow td {
+  border-bottom: 0;
+}
+
+#tBody tr td:last-child {
+  border-right: 0px;
+}
+
+td:first-child {
+  min-width: 108px;
+  /* Firefox needs min- and max-widths */
+  max-width: 108px;
+  border-left: 0;
+}
+
+td:first-child + td {
+  min-width: 125px;
+  width: 100%;
+}
+
+td:first-child + td + td {
+  min-width: 130px;
+  max-width: 130px;
+}
+
+td:first-child + td + td + td {
+  min-width: 130px;
+  max-width: 130px;
+}
+
+td:first-child + td + td + td + td {
+  width: 180px;
+  /* here, Firefox messes up with only min- and max-widths */
+  min-width: 130px;
+  border-right: 0;
+}
+/*
+ * jQuery TipTop v1.0
+ * http://gilbitron.github.io/TipTop
+ *
+ * Copyright 2013, Dev7studios
+ * Free to use and abuse under the MIT license.
+ * http://www.opensource.org/licenses/mit-license.php
+ */
+
+.tiptop {
+  position: absolute;
+  z-index: 9999;
+  max-width: 300px;
+  padding: 5px;
+  font: 11px/1.6em "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #fff;
+  background: #222;
+  margin-top: -15px;
+  margin-left: 10px;
+}
+.tree {
+  font-size: 9pt;
+  color: #696969;
+  margin-left: 5%;
+}
+
+.tree .incoming {
+  margin-bottom: 0px;
+}
+
+.tree li {
+  list-style-type: none;
+  margin: 0;
+  padding: 10px 5px 0 5px;
+  position: relative;
+}
+
+.tree li::before,
+.tree li::after {
+  content: '';
+  left: -20px;
+  position: absolute;
+  right: auto;
+}
+
+.tree li::before {
+  border-left: 1px solid #999;
+  bottom: 50px;
+  height: 100%;
+  top: 0;
+  width: 1px;
+}
+
+.tree li::after {
+  border-top: 1px solid #999;
+  height: 20px;
+  top: 25px;
+  width: 25px;
+}
+
+.tree li div {
+  background: #f4f4f4;
+  border: 1px solid #c6c2c9;
+  display: inline-block;
+  box-sizing: border-box;
+}
+
+.tree li span {
+  display: inline-block;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-right: 8px;
+  text-decoration: none;
+}
+
+.tree li.parent_li >div {
+  cursor: pointer;
+}
+
+.tree li.parent_li >div:hover {
+  background: #e4f4de;
+  border: 1px solid #c4dac0;
+}
+
+.tree li.parent_li >ul >li div {
+  cursor: pointer;
+}
+
+.tree li.parent_li >ul >li div:hover {
+  background: #e4f4de;
+  border: 1px solid #c4dac0;
+}
+
+.tree li.parent_li >div > i:hover {
+  color: #91a18e;
+}
+
+.tree>ul>li::before,
+.tree>ul>li::after {
+  border: 0;
+}
+
+.tree li:last-child::before {
+  height: 25px;
+}
+
+.tree li.parent_li>span:hover,
+.tree li.parent_li>span:hover+ul li span {
+  background: #eee;
+  border: 1px solid #94a0b4;
+}
+
+.tree .incoming {
+  padding-left: 10px;
+  margin-top: 0px;
+  margin-bottom: 15px;
+}
+
+.tree li.parent_li {
+  padding-top: 0px;
+}
+
+.tree hr {
+  border-top: 1px solid #3b3b3b;
+  margin: 5px;
+}
+
+.message {
+  display: none;
+}
+
+.tree.options {
+  height: 15px;
+  width: 15px;
+  padding: 0px;
+  margin-left: 5px;
+  cursor: pointer;
+  color: #cd3737;
+}
+
+.tree.options:hover .fa {
+  display: block;
+}
+
+.tree.options .fa {
+  display: none;
+}
+.box {
+  height: 100%;
+  width: 100%;
+  border: 1px solid #a7a6a6;
+  background: #fff;
+  position: relative;
+  float: left;
+  display: block;
+  box-sizing: border-box;
+  min-height: 88px;
+}
+
+.box .header {
+  height: 30px;
+  overflow: hidden;
+  background: #f2f2f2;
+  border-bottom: 1px solid #a7a6a6;
+  border-top: 1px solid #ffffff;
+  font-size: 10pt;
+  color: #696969;
+  line-height: 30px;
+  overflow: hidden;
+}
+
+.box .header .border.left {
+  border-right: 1px solid #cccccc;
+}
+
+.box .header .border.right {
+  border-left: 1px solid #cccccc;
+}
+
+.box .header .item {
+  padding-right: 10px;
+  padding-left: 10px;
+  height: 100%;
+}
+
+.box .header .item.right:hover {
+  background: #f9f9f9;
+  cursor: pointer;
+}
+
+.box .body {
+  box-sizing: border-box;
+  bottom: 0px;
+  position: absolute;
+  top: 32px;
+  width: 100%;
+}
+
+/* with footer */
+
+.box .body.min {
+  bottom: 26px;
+}
+
+.box .body .column {
+  position: relative;
+  float: left;
+  box-sizing: border-box;
+  height: 100%;
+  color: #696969;
+  font-size: 9pt;
+}
+
+.box .body .column .header {
+  background: #fff;
+  color: #727272;
+  font-family: Arial;
+  font-size: 8pt;
+  padding-left: 10px;
+  height: 28px;
+  line-height: 28px;
+  box-sizing: border-box;
+  border: 0px;
+  border-bottom: 1px solid #999;
+}
+
+.box .body .column .content {
+  height: auto;
+  display: table-row;
+  position: absolute;
+  top: 28px;
+  bottom: 0px;
+  width: 100%;
+  overflow: auto;
+  background: inherit;
+}
+
+.box .body .column .content.max {
+  top: 0px !important;
+}
+
+.box .footer {
+  height: 25px;
+  width: 100%;
+  background: #fcfcfc;
+  border-top: 1px solid #dddddd;
+  position: absolute;
+  bottom: 0px;
+}
+
+.box .splitter.horizontal {
+  height: 100%;
+  background: #a9a9a9;
+  width: 1px;
+  border: 0px;
+  min-height: inherit;
+}
+
+.properties .wrapper {
+  height: 100%;
+  width: 100%;
+  white-space: normal;
+  padding: 10px;
+  padding-left: 12px;
+  box-sizing: border-box;
+}
+
+.properties ul {
+  text-align: left;
+  list-style: none;
+  margin: 0px;
+  padding: 0px;
+  margin-top: 5px;
+  margin-left: 5px;
+}
+
+.properties .value .name {
+  min-width: 100px;
+  height: 14px;
+  display: block;
+}
+
+.properties ul li {
+  display: inline-block;
+  clear: left;
+  float: left;
+  margin-bottom: 1px;
+  white-space: nowrap;
+}
+
+.properties ul li .properties.close {
+  display: block;
+  position: absolute;
+  left: 4px;
+  width: 15px;
+  height: 20px;
+  cursor: pointer;
+  padding-top: 1px;
+}
+
+.properties.close:hover i {
+  display: block;
+  color: #cd3737;
+}
+
+.properties.close i {
+  display: none;
+}
+
+.properties.add {
+  cursor: copy;
+  height: 10px;
+  width: 200px;
+}
+
+.properties .title {
+  float: left;
+  padding-right: 5px;
+  font-weight: 700;
+  word-break: keep-all;
+  white-space: nowrap;
+  font-family: Segoe UI, Arial, sans-serif;
+  font-size: 9pt;
+}
+
+.properties .value {
+  font-family: Consolas, Arial, sans-serif;
+  font-size: 9pt;
+  display: inline-block;
+  text-overflow: ellipsis;
+  word-wrap: break-word;
+}
+
+.search.container {
+  width: 100%;
+  height: 52px;
+  padding: 10px;
+  box-sizing: border-box;
+  background: #fafafa none repeat scroll 0 0;
+  border-bottom: 1px solid #e3e3e3;
+  position: static !important;
+  left: 0px;
+}
+
+.search.border {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #a3a3a3;
+  box-sizing: border-box;
+  background: #ffffff;
+}
+
+.search .icon.wrapper {
+  height: 100%;
+  float: left;
+  line-height: 28px;
+  box-sizing: border-box;
+  width: 37px;
+  padding-left: 11px;
+  font-size: 8pt;
+}
+
+.search .input.wrapper {
+  box-sizing: border-box;
+  margin-top: 5px;
+  margin-left: 10px;
+}
