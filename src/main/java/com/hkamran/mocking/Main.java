@@ -101,6 +101,7 @@ public class Main {
 
 		Options options = new Options();
 		options.addOption(webPort);
+		options.addOption(proxyPort);
 		return options;
 }
 }
