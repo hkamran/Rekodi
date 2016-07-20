@@ -8,10 +8,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
-import org.apache.log4j.Logger;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.json.JSONArray;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
@@ -19,7 +20,7 @@ import org.xml.sax.InputSource;
 
 public class Formatter {
 
-	private final static Logger log = Logger.getLogger(Formatter.class);
+	private final static Logger log = LogManager.getLogger(Formatter.class);
 
 	public static String format(String content) {
 

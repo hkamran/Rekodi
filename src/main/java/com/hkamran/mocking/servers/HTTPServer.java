@@ -12,7 +12,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerList;
@@ -34,7 +35,7 @@ import com.hkamran.mocking.Tape;
 @Path("/")
 public class HTTPServer {
 
-	private final static Logger log = Logger.getLogger(HTTPServer.class);
+	private final static Logger log = LogManager.getLogger(HTTPServer.class);
 	private static Proxies proxies;
 	
 	public static void setProxyManager(Proxies proxies) {

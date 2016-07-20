@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -18,7 +19,7 @@ import com.hkamran.mocking.Request.MATCHTYPE;
 
 public class Tape {
 
-	private final static Logger log = Logger.getLogger(Tape.class);
+	private final static Logger log = LogManager.getLogger(Tape.class);
 	private Map<Request, List<Response>> tape = Collections.synchronizedMap(new HashMap<Request, List<Response>>());
 
 	public void put(Request request, Response response) {

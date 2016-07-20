@@ -1,14 +1,14 @@
 package com.hkamran.mocking;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.littleshoot.proxy.HttpProxyServer;
-import org.littleshoot.proxy.extras.SelfSignedMitmManager;
 import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 
 public class Proxy {
 
-	private final static Logger log = Logger.getLogger(Proxy.class);
+	private final static Logger log = LogManager.getLogger(Proxy.class);
 	private Filter filter = null;
 	private HttpProxyServer server;
 	
@@ -33,9 +33,12 @@ public class Proxy {
 	public void start() {
 		log.info("Starting Proxy Server: " + id + " on " + filter.getHost() + " at " + this.port);
 
-		server = DefaultHttpProxyServer.bootstrap().withPort(port)
+	
+		server = DefaultHttpProxyServer.bootstrap()
+				.withPort(port)
 				.withFiltersSource(filter)
-				.withManInTheMiddle(new SelfSignedMitmManager()).start();
+				.start();
+	
 		
 		this.status = Status.START;
 		

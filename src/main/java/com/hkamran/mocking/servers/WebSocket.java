@@ -14,7 +14,8 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.json.JSONException;
 
 import com.hkamran.mocking.Filter;
@@ -32,7 +33,7 @@ import com.hkamran.mocking.Payload.Action;
 public class WebSocket {
 
 	private static Proxies proxies = new Proxies();
-	private final static Logger log = Logger.getLogger(WebSocket.class);
+	private final static Logger log = LogManager.getLogger(WebSocket.class);
 	static List<Session> sessions = new ArrayList<Session>();
 
 	@OnOpen

@@ -1,6 +1,7 @@
 package com.hkamran.mocking;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.hkamran.mocking.Filter.State;
 import com.hkamran.mocking.servers.HTTPServer;
@@ -12,7 +13,7 @@ import com.hkamran.mocking.servers.WebSocket;
  */
 public class Main {
 
-	private final static Logger log = Logger.getLogger(Main.class);
+	private final static Logger log = LogManager.getLogger(Main.class);
 
 	public static void main(String[] args) throws Exception {
 		

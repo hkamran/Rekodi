@@ -2,6 +2,7 @@ package com.hkamran.mocking;
 
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.internal.StringUtil;
@@ -36,8 +37,8 @@ public class Request {
 	
 	public Integer counter = 0;
 
-	public Request(DefaultFullHttpRequest req, State state) {
-		DefaultFullHttpRequest reqCopy = (DefaultFullHttpRequest) req.copy();
+	public Request(FullHttpRequest req, State state) {
+		FullHttpRequest reqCopy = (FullHttpRequest) req.copy();
 		reqCopy.retain();
 		
 		for (Entry<String, String> entry : reqCopy.headers()) {
@@ -68,7 +69,7 @@ public class Request {
 		this.state = state;
 	}
 
-	private String parseContent(DefaultFullHttpRequest req) {
+	private String parseContent(FullHttpRequest req) {
 		ByteBufInputStream bufInputStream = new ByteBufInputStream(req.content().copy());
 		StringBuilder content = new StringBuilder();
 

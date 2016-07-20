@@ -2,6 +2,9 @@ package com.hkamran.mocking;
 
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
@@ -16,7 +19,8 @@ import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.littleshoot.proxy.ChainedProxy;
 import org.littleshoot.proxy.ChainedProxyAdapter;
@@ -29,7 +33,7 @@ import com.hkamran.mocking.servers.WebSocket;
 
 public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyManager {
 
-	private final static Logger log = Logger.getLogger(Filter.class);
+	private final static Logger log = LogManager.getLogger(Filter.class);
 	private static final int MAX_SIZE = 8388608;
 
 	private Tape tape;
@@ -64,12 +68,16 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 			StopWatch watch;
 
 			@Override
-			public HttpResponse requestPre(HttpObject httpObject) {
+			public HttpResponse clientToProxyRequest(HttpObject httpObject) {
+				log.info("handling pre-request");
 				try {
-					if (httpObject instanceof DefaultFullHttpRequest) {
-						DefaultFullHttpRequest httpFullObj = (DefaultFullHttpRequest) httpObject;
+					if (httpObject instanceof FullHttpRequest) {
+						FullHttpRequest httpFullObj = (FullHttpRequest) httpObject;
 						if (redirect) {
-							httpFullObj.headers().set("Host", host + ":" + port);
+							HttpHeaders headers = httpFullObj.headers();
+							headers.set("Host", host + ":" + port);
+							//headers.remove(HttpHeaders.Names.IF_MODIFIED_SINCE);
+						    //headers.remove(HttpHeaders.Names.IF_NONE_MATCH); 
 						}
 					}
 				} catch (Exception e) {
@@ -81,11 +89,12 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 			}
 
 			@Override
-			public HttpResponse requestPost(HttpObject httpObject) {
+			public HttpResponse proxyToServerRequest(HttpObject httpObject) {
+				log.info("handling post-request");
 				try {
-					if (httpObject instanceof DefaultFullHttpRequest) {
+					if (httpObject instanceof FullHttpRequest) {
 
-						DefaultFullHttpRequest httpFullObj = (DefaultFullHttpRequest) httpObject;
+						FullHttpRequest httpFullObj = (FullHttpRequest) httpObject;
 						req = new Request(httpFullObj, state);
 
 						log.info("Request incoming: " + req.hashCode());
@@ -109,6 +118,8 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 						}
 
 						addEvent(counter, res, req, watch);
+					} else {
+						throw new RuntimeException("HttpObject is not " + FullHttpRequest.class);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -135,11 +146,12 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 			}
 
 			@Override
-			public HttpObject responsePost(HttpObject httpObject) {
+			public HttpObject serverToProxyResponse(HttpObject httpObject) {
+				log.info("handling post-response");
 				try {
-					if (httpObject instanceof DefaultFullHttpResponse) {
+					if (httpObject instanceof FullHttpResponse) {
 
-						DefaultFullHttpResponse httpFullObj = (DefaultFullHttpResponse) httpObject;
+						FullHttpResponse httpFullObj = (FullHttpResponse) httpObject;
 						res = new Response(httpFullObj, state);
 						res.setParent(req.hashCode());
 						try {
@@ -159,6 +171,8 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 
 						addEvent(counter++, res, req, watch);
 
+					} else {
+						throw new RuntimeException("HttpObject is not " + FullHttpResponse.class);
 					}
 					return httpObject;
 				} catch (Exception e) {
@@ -269,6 +283,7 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 		chainedProxies.add(new ChainedProxyAdapter() {
 			@Override
 			public InetSocketAddress getChainedProxyAddress() {
+				System.out.println("ASDASDASD");
 				return new InetSocketAddress(getHost(), getPort());
 			}
 		});

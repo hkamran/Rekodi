@@ -4,6 +4,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -33,8 +35,8 @@ public class Response {
 	private Integer id = -1;
 	private Integer parent = -1;
 	
-	public Response(DefaultFullHttpResponse res, State state) {
-		DefaultFullHttpResponse resCopy = (DefaultFullHttpResponse) res.copy();
+	public Response(FullHttpResponse res, State state) {
+		FullHttpResponse resCopy = (FullHttpResponse) res.copy();
 		resCopy.retain();
 		
 		this.content = parseContent(resCopy);
@@ -62,7 +64,7 @@ public class Response {
 		this.state = state;
 	}
 
-	private String parseContent(DefaultFullHttpResponse res) {
+	private String parseContent(FullHttpResponse res) {
 		ByteBufInputStream bufInputStream = new ByteBufInputStream(res.content().copy());
 		StringBuilder content = new StringBuilder();
 
