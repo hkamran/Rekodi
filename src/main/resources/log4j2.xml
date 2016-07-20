@@ -12,7 +12,8 @@
 		    <level value="INFO"/>
 		</logger>
 
-		<Root level="none">
+		<Root level="debug">
+			<AppenderRef ref="STDOUT"/>
 		</Root>
 	</Loggers>
 </Configuration>
