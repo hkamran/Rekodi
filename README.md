@@ -7,7 +7,7 @@ Visit [releases](http://hkamran.info/projects/rekodi/releases) page
 
 ### Screenshot:
 
-<div align="center">
+<div align="left">
 	<img src="http://hkamran.info/projects/rekodi/screenshots/screenshot_1.png"></img>
 </div>
 
