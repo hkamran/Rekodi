@@ -58,7 +58,7 @@ public class Main {
 			Filter filter = proxy.getFilter();
 			
 			filter.setState(State.PROXY);
-			filter.setRedirectInfo("www.thomas-bayer.com", 80);
+			filter.setRedirectInfo("Enter Host", 80);
 			filter.setRedirectState(true);
 			
 			
