@@ -32,14 +32,12 @@ public class Proxy {
 
 	public void start() {
 		log.info("Starting Proxy Server: " + id + " on " + filter.getHost() + " at " + this.port);
-
 	
 		server = DefaultHttpProxyServer.bootstrap()
 				.withPort(port)
 				.withFiltersSource(filter)
 				.start();
-	
-		
+
 		this.status = Status.START;
 		
 	}

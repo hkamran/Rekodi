@@ -75,9 +75,7 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 						FullHttpRequest httpFullObj = (FullHttpRequest) httpObject;
 						if (redirect) {
 							HttpHeaders headers = httpFullObj.headers();
-							headers.set("Host", host + ":" + port);
-							//headers.remove(HttpHeaders.Names.IF_MODIFIED_SINCE);
-						    //headers.remove(HttpHeaders.Names.IF_NONE_MATCH); 
+							headers.set("Host", host + ":" + port); 
 						}
 					}
 				} catch (Exception e) {
