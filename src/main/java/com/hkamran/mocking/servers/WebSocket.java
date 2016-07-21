@@ -68,7 +68,7 @@ public class WebSocket {
 	public void onWebSocketText(String message, Session session) {
 		
 		Payload payload = Payload.parseJSON(message);
-		System.out.println("Received TEXT message: " + message);
+		log.info("Received Payload: " + payload.action + " " + payload.type);
 		
 		if (payload.type == Payload.Type.FILTER) {
 			handleFilterUpdate(payload);
@@ -186,7 +186,7 @@ public class WebSocket {
 				Request request = tape.getRequest(response.getParent().toString());
 				
 				List<Response> responses = tape.getResponses(request);
-				
+		
 				Response result = responses.remove(response.getId());
 				
 				int counter = 0;
@@ -304,7 +304,7 @@ public class WebSocket {
 
 	@OnClose
 	public void onWebSocketClose(Session session) {
-		System.out.println("Socket Closed: " + session.getId());
+		log.info("Socket Closed: " + session.getId());
 		sessions.remove(session);
 	}
 

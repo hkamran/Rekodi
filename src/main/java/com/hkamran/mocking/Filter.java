@@ -128,16 +128,21 @@ public class Filter extends HttpFiltersSourceAdapter {
 				Map<String, String> headers = new HashMap<String, String>();
 				String content = "";
 				String protocol = "HTTP/1.1";
-				Integer status = 505;
+				Integer status = 500;
 				State resState = state;
+				
 				Response response = new Response(headers, content, protocol, status, resState);
 				this.res = response;
+				this.res.setParent(req.hashCode());
+				if (state == State.RECORD) {
+					sendToRecorder(res, req);
+				}
+				
 				try {
 					watch.stop();
-				} catch (IllegalStateException e) {
-
-				}
-				addEvent(counter++, res, req, watch);
+				} catch (IllegalStateException e) {}
+				
+				addEvent(counter, res, req, watch);
 				return response.getHTTPObject();
 			}
 
