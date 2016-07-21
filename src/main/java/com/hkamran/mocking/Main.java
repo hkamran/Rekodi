@@ -14,9 +14,11 @@ import com.hkamran.mocking.servers.HTTPServer;
 import com.hkamran.mocking.servers.WebSocket;
 
 /**
- * Hello world!
- *
+ * Main entry point
+ * 
+ * @author HK
  */
+@SuppressWarnings("deprecation")
 public class Main {
 
 	private static final int DEFAULT_PROXY_PORT = 9090;
@@ -27,6 +29,11 @@ public class Main {
 	
 	public static void main(String[] args) {
 		try {
+			
+			/**
+			 * Read command line arguments
+			 */
+			
 			Options options = createCMDOptions();
 			HelpFormatter f = new HelpFormatter();
 			CommandLineParser parser = new BasicParser();
@@ -68,8 +75,7 @@ public class Main {
 			frontEnd.start(webPort);
 	
 		} catch (Exception e) {
-			System.err.println("Unable to start application...");
-			e.printStackTrace();
+			throw new RuntimeException("Unable to start application...", e);
 		}
 	}
 

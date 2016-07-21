@@ -1,7 +1,5 @@
 package com.hkamran.mocking;
 
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -9,35 +7,36 @@ import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
-import org.littleshoot.proxy.ChainedProxy;
-import org.littleshoot.proxy.ChainedProxyAdapter;
-import org.littleshoot.proxy.ChainedProxyManager;
 import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersAdapter;
 import org.littleshoot.proxy.HttpFiltersSourceAdapter;
 
 import com.hkamran.mocking.servers.WebSocket;
 
-public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyManager {
+/**
+ * This class handles the logic of filtering requests
+ * and responses. It determines whether to return a mocked response, record
+ * or just allow through each request.
+ * 
+ * @author Houman Kamran
+ */
+public class Filter extends HttpFiltersSourceAdapter {
 
 	private final static Logger log = LogManager.getLogger(Filter.class);
 	private static final int MAX_SIZE = 8388608;
 
 	private Tape tape;
-	private Recorder recorder;
 
 	private List<Event> events = new ArrayList<Event>();
 	private Integer counter = 0;
@@ -55,7 +54,6 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 	public Filter(Integer id) {
 		this.id = id;
 		this.tape = new Tape();
-		this.recorder = new Recorder(tape);
 	}
 
 	@Override
@@ -218,7 +216,7 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 	}
 
 	public HttpResponse sendToRecorder(Response res, Request req) {
-		recorder.add(req, res);
+		tape.put(req, res);
 		return null;
 	}
 
@@ -241,7 +239,6 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 		}
 		log.info("Settings Tape " + tape.hashCode());
 		this.tape = tape;
-		recorder.setTape(tape);
 	}
 
 	public void setRedirectInfo(String host, Integer port) {
@@ -276,21 +273,7 @@ public class Filter extends HttpFiltersSourceAdapter implements ChainedProxyMana
 		this.events = new ArrayList<Event>();
 		return events;
 	}
-
-	public void lookupChainedProxies(HttpRequest httpRequest, Queue<ChainedProxy> chainedProxies) {
-		chainedProxies.add(new ChainedProxyAdapter() {
-			@Override
-			public InetSocketAddress getChainedProxyAddress() {
-				System.out.println("ASDASDASD");
-				return new InetSocketAddress(getHost(), getPort());
-			}
-		});
-
-		if (!getRedirectState()) {
-			chainedProxies.add(ChainedProxyAdapter.FALLBACK_TO_DIRECT_CONNECTION);
-		}
-	}
-
+	
 	@Override
 	public int getMaximumRequestBufferSizeInBytes() {
 		return MAX_SIZE;

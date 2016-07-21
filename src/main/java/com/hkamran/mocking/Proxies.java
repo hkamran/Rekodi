@@ -8,6 +8,11 @@ import java.util.Set;
 
 import org.json.JSONObject;
 
+/**
+ * The responsibilities of this class is to maintain a list of all running proxies.
+ * 
+ * @author Houman Kamran
+ */
 public class Proxies {
 	private static Integer count = 0;
 	Map<Integer, Proxy> proxies = new HashMap<Integer, Proxy>();

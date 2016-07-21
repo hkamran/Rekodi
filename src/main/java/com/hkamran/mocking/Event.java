@@ -8,7 +8,12 @@ import org.json.JSONObject;
 
 import com.hkamran.mocking.Filter.State;
 
-
+/**
+ * This class holds the information of that occurred when
+ * the clients sends a requests and gets a response.
+ * 
+ * @author Houman Kamran
+ */
 public class Event {
 	public Response response;
 	public Request request;

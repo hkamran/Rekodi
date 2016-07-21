@@ -1,7 +1,6 @@
 package com.hkamran.mocking;
 
 import io.netty.buffer.ByteBufInputStream;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
@@ -17,6 +16,11 @@ import org.json.JSONObject;
 import com.hkamran.mocking.Filter.State;
 import com.hkamran.mocking.util.Formatter;
 
+/**
+ * This class represents the HTTP request that the client has made.
+ *  
+ * @author Houman Kamran
+ */
 public class Request {
 
 	public static enum MATCHTYPE {
@@ -56,8 +60,6 @@ public class Request {
 		method = reqCopy.getMethod().toString();
 		uri = reqCopy.getUri();
 		this.state = state;
-		
-		System.out.println(toJSON());
 	}
 	
 	public Request(Map<String, String> headers, String content, String protocol, String method, String uri, State state) {
@@ -260,11 +262,5 @@ public class Request {
 		return request;
 	}
 
-	
-	public static void main(String[] args) {
-		Request request = Request.parseJSON("{'headers':{'Accept-Language':'null'},'content':'','protocol':'HTTP/1.1','matchString':'','matchType':'request','method':'POST','uri':'/'}");
-		System.out.println(request.toJSON());
-	
-	}
 
 }

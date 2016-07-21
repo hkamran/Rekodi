@@ -4,9 +4,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.littleshoot.proxy.HttpProxyServer;
-import org.littleshoot.proxy.MitmManager;
 import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 
+/**
+ * This class's responsibility is to act as the proxy. 
+ * 
+ * @author Houman Kamran
+ */
 public class Proxy {
 
 	private final static Logger log = LogManager.getLogger(Proxy.class);

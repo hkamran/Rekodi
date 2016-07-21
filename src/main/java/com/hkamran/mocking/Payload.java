@@ -2,6 +2,12 @@ package com.hkamran.mocking;
 
 import org.json.JSONObject;
 
+/**
+ * This class is used to communicate between the web client and the recording proxy.
+ * Both can request to insert, delete, update certain objects from their systems.
+ *  
+ * @author Houman Kamran
+ */
 public class Payload {
 
 	public static enum Type {

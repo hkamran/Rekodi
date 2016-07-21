@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
@@ -23,6 +22,11 @@ import org.json.JSONObject;
 import com.hkamran.mocking.Filter.State;
 import com.hkamran.mocking.util.Formatter;
 
+/**
+ * This class represents the HTTP response that the client has gotten.
+ *  
+ * @author Houman Kamran
+ */
 public class Response {
 
 	private Map<String, String> headers = new HashMap<String, String>();

@@ -77,8 +77,6 @@ public class HTTPServer {
 		config.registerClasses(s);
 		
 		Server server = new Server(port);
-		
-
 
 		//Create Jersey Handler (function is to handle REST)
 		ServletHolder jerseyServlet = new ServletHolder(new ServletContainer(config));

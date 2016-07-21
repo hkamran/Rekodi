@@ -18,6 +18,12 @@ import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
+
+/**
+ * This class's responsibility is to format XML and JSON.
+ * 
+ * @author Houman Kamran
+ */
 public class Formatter {
 
 	private final static Logger log = LogManager.getLogger(Formatter.class);

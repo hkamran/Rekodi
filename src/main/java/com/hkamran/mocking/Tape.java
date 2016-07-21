@@ -17,6 +17,12 @@ import org.json.JSONObject;
 
 import com.hkamran.mocking.Request.MATCHTYPE;
 
+/**
+ * This class represents the recorded tape, it holds all the request and responses
+ * made while the filter was in record state.
+ * 
+ * @author Houman Kamran
+ */
 public class Tape {
 
 	private final static Logger log = LogManager.getLogger(Tape.class);
