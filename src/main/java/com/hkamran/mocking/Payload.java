@@ -6,7 +6,7 @@ import org.json.JSONObject;
  * This class is used to communicate between the web client and the recording proxy.
  * Both can request to insert, delete, update certain objects from their systems.
  *  
- * @author Houman Kamran
+ * @author Hooman Kamran
  */
 public class Payload {
 

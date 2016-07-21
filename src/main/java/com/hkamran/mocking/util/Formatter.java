@@ -22,7 +22,7 @@ import org.xml.sax.InputSource;
 /**
  * This class's responsibility is to format XML and JSON.
  * 
- * @author Houman Kamran
+ * @author Hooman Kamran
  */
 public class Formatter {
 

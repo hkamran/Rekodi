@@ -25,7 +25,7 @@ import com.hkamran.mocking.util.Formatter;
 /**
  * This class represents the HTTP response that the client has gotten.
  *  
- * @author Houman Kamran
+ * @author Hooman Kamran
  */
 public class Response {
 

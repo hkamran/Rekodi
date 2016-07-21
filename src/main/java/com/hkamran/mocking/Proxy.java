@@ -9,7 +9,7 @@ import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 /**
  * This class's responsibility is to act as the proxy. 
  * 
- * @author Houman Kamran
+ * @author Hooman Kamran
  */
 public class Proxy {
 

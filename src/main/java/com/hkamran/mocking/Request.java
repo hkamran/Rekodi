@@ -19,7 +19,7 @@ import com.hkamran.mocking.util.Formatter;
 /**
  * This class represents the HTTP request that the client has made.
  *  
- * @author Houman Kamran
+ * @author Hooman Kamran
  */
 public class Request {
 

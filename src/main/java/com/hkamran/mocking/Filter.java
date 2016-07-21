@@ -29,7 +29,7 @@ import com.hkamran.mocking.servers.WebSocket;
  * and responses. It determines whether to return a mocked response, record
  * or just allow through each request.
  * 
- * @author Houman Kamran
+ * @author Hooman Kamran
  */
 public class Filter extends HttpFiltersSourceAdapter {
 

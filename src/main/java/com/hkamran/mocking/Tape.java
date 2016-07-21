@@ -21,7 +21,7 @@ import com.hkamran.mocking.Request.MATCHTYPE;
  * This class represents the recorded tape, it holds all the request and responses
  * made while the filter was in record state.
  * 
- * @author Houman Kamran
+ * @author Hooman Kamran
  */
 public class Tape {
 

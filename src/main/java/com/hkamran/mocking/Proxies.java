@@ -11,7 +11,7 @@ import org.json.JSONObject;
 /**
  * The responsibilities of this class is to maintain a list of all running proxies.
  * 
- * @author Houman Kamran
+ * @author Hooman Kamran
  */
 public class Proxies {
 	private static Integer count = 0;
