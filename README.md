@@ -2,6 +2,9 @@
 A proxy with the ability to record and playback HTTP Responses. Ideally made 
 to record service calls (SOAP/REST)
 
+### Releases:
+Visit [releases](http://hkamran.info/projects/rekodi/releases) page
+
 ### Screenshot:
 
 <div align="center">
@@ -18,7 +21,5 @@ java -jar Rekodi-X-X-X.jar `-webPort [PORT]` `-proxyPort [PORT]`
 ### Requirements:
 Java 1.7
 
-### Releases:
-Visit [releases](http://hkamran.info/projects/rekodi/releases) page
 	
 	
