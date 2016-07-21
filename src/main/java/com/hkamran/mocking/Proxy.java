@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.littleshoot.proxy.HttpProxyServer;
+import org.littleshoot.proxy.MitmManager;
 import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 
 public class Proxy {
@@ -33,10 +34,16 @@ public class Proxy {
 	public void start() {
 		log.info("Starting Proxy Server: " + id + " on " + filter.getHost() + " at " + this.port);
 	
-		server = DefaultHttpProxyServer.bootstrap()
-				.withPort(port)
-				.withFiltersSource(filter)
-				.start();
+		try {
+			//.withManInTheMiddle(new CertificateSniffingMitmManager())
+			server = DefaultHttpProxyServer.bootstrap()
+					.withPort(port)
+					.withFiltersSource(filter)
+					
+					.start();
+		} catch (Exception e) {
+			throw new RuntimeException("Unable to start proxy " + name + ":" + port, e);
+		}
 
 		this.status = Status.START;
 		

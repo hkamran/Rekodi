@@ -305,6 +305,7 @@ public class WebSocket {
 	@OnClose
 	public void onWebSocketClose(Session session) {
 		System.out.println("Socket Closed: " + session.getId());
+		sessions.remove(session);
 	}
 
 	@OnError
