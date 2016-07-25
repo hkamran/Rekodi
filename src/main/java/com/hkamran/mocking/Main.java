@@ -50,7 +50,7 @@ public class Main {
 			 * 
 			 */
 			
-			log.info("Starting up Recorder....");
+			log.info("Starting up Rekodi....");
 			Proxies proxies = new Proxies();
 			
 			Integer id = proxies.add("Default Service", initialProxy);
