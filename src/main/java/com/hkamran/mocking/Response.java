@@ -47,17 +47,27 @@ public class Response {
 		this.protocol = resCopy.getProtocolVersion().toString();
 		this.status = resCopy.getStatus().code();
 		
+		copyHeaders(resCopy);
+		this.state = state;
+		
+	}
+
+	private void copyHeaders(FullHttpResponse resCopy) {
 		for (Entry<String, String> entry : resCopy.headers()) {
 			String key = entry.getKey();
 			String value = entry.getValue();
+			
+			if (key.equalsIgnoreCase("Content-Length")) {
+				Integer length = content.length();
+				value = length.toString();
+			}
+			
 			if (value == null) {
 				value = "";
 			}
 			
 			headers.put(key, value);
 		}
-		this.state = state;
-		
 	}
 	
 	public Response(Map<String, String> headers, String content, String protocol, Integer status, State state) {
