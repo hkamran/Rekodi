@@ -50,6 +50,13 @@ public class Main {
 			 * 
 			 */
 			
+			System.out.println("----------------------------");
+			System.out.println("Rekodi");
+			System.out.println("----------------------------");
+			System.out.println("Version: 1.0.0");
+			System.out.println("Visit http://localhost:" + webPort);
+			System.out.println("----------------------------");
+			
 			log.info("Starting up Rekodi....");
 			Proxies proxies = new Proxies();
 			
