@@ -43,6 +43,7 @@ public class Proxy {
 			server = DefaultHttpProxyServer.bootstrap()
 					.withPort(port)
 					.withFiltersSource(filter)
+					.withAllowLocalOnly(false)
 					
 					.start();
 		} catch (Exception e) {
