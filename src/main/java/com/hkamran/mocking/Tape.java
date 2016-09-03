@@ -83,6 +83,10 @@ public class Tape {
 		tape.remove(request);
 
 	}
+	
+	public Boolean hasRequest(Request request) {
+		return this.tape.containsKey(request);
+	}
 
 	public Response getResponse(final Request request) {
 		Request key = null;

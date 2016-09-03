@@ -285,6 +285,7 @@ public class WebSocket {
 			Integer port = updatedFilter.port;
 			Boolean redirect = updatedFilter.getRedirectState();
 			State state = updatedFilter.getState();
+			Boolean recordMock = updatedFilter.getRecordMock();
 			
 			Integer id = payload.id;
 			Proxy proxy = proxies.get(id);
@@ -293,6 +294,8 @@ public class WebSocket {
 			filter.setRedirectInfo(host, port);
 			filter.setRedirectState(redirect);
 			filter.setState(state);
+			filter.setRecordMock(recordMock);
+			filter.tmp.clear();
 			
 			Payload filterPayload = Payload.create(id, 
 					Payload.Action.UPDATE, 

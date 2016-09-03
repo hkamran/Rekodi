@@ -10,8 +10,10 @@ import io.netty.handler.codec.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.time.StopWatch;
@@ -38,6 +40,7 @@ public class Filter extends HttpFiltersSourceAdapter {
 
 	private Tape tape;
 
+	public Set<Request> tmp = new HashSet<Request>();
 	private List<Event> events = new ArrayList<Event>();
 	private Integer counter = 0;
 	
@@ -45,6 +48,7 @@ public class Filter extends HttpFiltersSourceAdapter {
 	public String host = "localhost";
 	public Integer port = 80;
 	public Boolean redirect = true;
+	public Boolean recordMock = false;
 	public Integer id;
 	
 	public static enum State {
@@ -100,11 +104,18 @@ public class Filter extends HttpFiltersSourceAdapter {
 						if (state == State.PROXY) {
 							// No need
 						} else if (state == State.MOCK) {
-							HttpResponse response = sendToMock(req, watch);
-							if (!redirect) {
-								return handleNoRedirect();
+							System.out.println(!tmp.contains(req) && tape.hasRequest(req));
+							if (!tmp.contains(req) && tape.hasRequest(req)) {
+								HttpResponse response = sendToMock(req, watch);
+								if (!redirect) {
+									return handleNoRedirect();
+								}
+								return response;
+							} else {
+								if (recordMock) {
+									tmp.add(req);
+								}
 							}
-							return response;
 						} else if (state == State.RECORD) {
 							// No Need
 						}
@@ -165,7 +176,9 @@ public class Filter extends HttpFiltersSourceAdapter {
 						if (state == State.PROXY) {
 							// No need.
 						} else if (state == State.MOCK) {
-							// No need
+							if (recordMock) {
+								sendToRecorder(res, req);
+							}
 						} else if (state == State.RECORD) {
 							sendToRecorder(res, req);
 						}
@@ -207,9 +220,8 @@ public class Filter extends HttpFiltersSourceAdapter {
 
 		Response response = tape.getResponse(request);
 
-		watch.stop();
-
 		if (response != null) {
+			watch.stop();
 			log.info("Mocked Response outgoing: " + response.hashCode() + " for " + request.hashCode());
 			addEvent(counter++, response, request, watch);
 			return (HttpResponse) response.getHTTPObject();
@@ -231,7 +243,19 @@ public class Filter extends HttpFiltersSourceAdapter {
 
 	public void setState(State state) {
 		log.info("State set to " + state.toString());
+		if (state != State.MOCK) {
+			this.tmp.clear();
+		}
 		this.state = state;
+	}
+	
+	public void setRecordMock(Boolean val) {
+		log.info("Setting RecordMocked: " + val);
+		this.recordMock = val;
+	}
+	
+	public Boolean getRecordMock() {
+		return this.recordMock;
 	}
 
 	public Tape getTape() {
@@ -242,14 +266,14 @@ public class Filter extends HttpFiltersSourceAdapter {
 		if (tape == null) {
 			return;
 		}
-		log.info("Settings Tape " + tape.hashCode());
+		log.info("Settings Tape: " + tape.hashCode());
 		this.tape = tape;
 	}
 
 	public void setRedirectInfo(String host, Integer port) {
 		this.host = host;
 		this.port = port;
-		log.info("Redirecting set to " + host + ":" + port);
+		log.info("Setting Redirect: " + host + ":" + port);
 	}
 
 	public void setRedirectState(boolean state) {
@@ -296,6 +320,7 @@ public class Filter extends HttpFiltersSourceAdapter {
 		json.put("redirect", this.redirect);
 		json.put("state", this.state);
 		json.put("id", this.id);
+		json.put("recordMock", this.recordMock);
 		return json;
 	}
 	
@@ -307,11 +332,13 @@ public class Filter extends HttpFiltersSourceAdapter {
 		Integer port = json.getInt("port");
 		Boolean redirect = json.getBoolean("redirect");
 		State state = State.valueOf(json.getString("state"));
+		Boolean recordMock = json.getBoolean("recordMock");
 		
 		Filter filter = new Filter(id);
 		filter.setRedirectInfo(host, port);
 		filter.setRedirectState(redirect);
 		filter.setState(state);
+		filter.setRecordMock(recordMock);
 		return filter;
 	}
 

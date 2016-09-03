@@ -18,7 +18,6 @@ import com.hkamran.mocking.servers.WebSocket;
  * 
  * @author HK
  */
-@SuppressWarnings("deprecation")
 public class Main {
 
 	private static final int DEFAULT_PROXY_PORT = 9090;
