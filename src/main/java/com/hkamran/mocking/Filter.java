@@ -104,7 +104,6 @@ public class Filter extends HttpFiltersSourceAdapter {
 						if (state == State.PROXY) {
 							// No need
 						} else if (state == State.MOCK) {
-							System.out.println(!tmp.contains(req) && tape.hasRequest(req));
 							if (!tmp.contains(req) && tape.hasRequest(req)) {
 								HttpResponse response = sendToMock(req, watch);
 								if (!redirect) {
@@ -177,6 +176,7 @@ public class Filter extends HttpFiltersSourceAdapter {
 							// No need.
 						} else if (state == State.MOCK) {
 							if (recordMock) {
+								res.setState(State.RECORD);
 								sendToRecorder(res, req);
 							}
 						} else if (state == State.RECORD) {

@@ -138,6 +138,10 @@ public class Response {
 		this.protocol = version.toString();
 	}
 	
+	public void setState(State state) {
+		this.state = state;
+	}
+	
 	public void setProtocol(String version) {
 		this.protocol = version;
 	}
@@ -243,7 +247,6 @@ public class Response {
 	public HttpResponse getHTTPObject() {
 		HttpVersion version = HttpVersion.valueOf(protocol);
 		HttpResponseStatus status = HttpResponseStatus.valueOf(this.status);
-		System.out.println(this.content);
 		ByteBuf content = Unpooled.wrappedBuffer(this.content.getBytes());
 		DefaultFullHttpResponse response = new DefaultFullHttpResponse(version, status, content);
 		
