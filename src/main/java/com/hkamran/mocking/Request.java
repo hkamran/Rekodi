@@ -122,6 +122,10 @@ public class Request {
 	public MATCHTYPE getMatchType() {
 		return matchType;
 	}
+	
+	public void setState(State state) {
+		this.state = state;
+	}
 
 	public void setMatchType(MATCHTYPE matchType) {
 		this.matchType = matchType;

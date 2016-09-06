@@ -176,6 +176,7 @@ public class Filter extends HttpFiltersSourceAdapter {
 							// No need.
 						} else if (state == State.MOCK) {
 							if (recordMock) {
+								req.setState(State.RECORD);
 								res.setState(State.RECORD);
 								sendToRecorder(res, req);
 							}
