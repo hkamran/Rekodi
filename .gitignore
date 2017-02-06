@@ -5,3 +5,5 @@
 /littleproxy_keystore.jks
 /littleproxy_cert
 /lib
+/*.jar
+/*.zip
