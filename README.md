@@ -21,5 +21,12 @@ java -jar Rekodi-X-X-X.jar `-webPort [PORT]` `-proxyPort [PORT]`
 ### Requirements:
 Java 1.7
 
-	
-	
+### Build Steps: 
+
+- mvn clean
+- mvn install package
+
+### Links
+https://github.com/hkamran/Rekodi-UI 
+
+
