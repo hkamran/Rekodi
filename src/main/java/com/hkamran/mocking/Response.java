@@ -9,6 +9,7 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
+import io.netty.util.CharsetUtil;
 import io.netty.util.internal.StringUtil;
 
 import java.io.IOException;
@@ -247,11 +248,15 @@ public class Response {
 	public HttpResponse getHTTPObject() {
 		HttpVersion version = HttpVersion.valueOf(protocol);
 		HttpResponseStatus status = HttpResponseStatus.valueOf(this.status);
-		ByteBuf content = Unpooled.wrappedBuffer(this.content.getBytes());
+		ByteBuf content = Unpooled.copiedBuffer(this.content, CharsetUtil.UTF_8);
 		DefaultFullHttpResponse response = new DefaultFullHttpResponse(version, status, content);
+
 		
 		HttpHeaders headers = response.headers();
 
+		if (!headers.contains(HttpHeaders.Names.CONNECTION)) {
+			headers.set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
+		}
 		
 		for (String key : this.headers.keySet()) {
 			headers.set(key, this.headers.get(key));
