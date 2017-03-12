@@ -106,7 +106,7 @@ public class Filter extends HttpFiltersSourceAdapter {
 						} else if (state == State.MOCK) {
 							if (!tmp.contains(req) && tape.hasRequest(req)) {
 								HttpResponse response = sendToMock(req, watch);
-								if (!redirect) {
+								if (!redirect && response == null) {
 									return handleNoRedirect();
 								}
 								return response;
