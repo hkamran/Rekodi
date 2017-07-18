@@ -46,29 +46,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-install-plugin</artifactId>
-				<version>2.5.2</version>
-				<executions>
-					<execution>
-						<id>install-external</id>
-						<phase>clean</phase>
-						<configuration>
-							<file>${project.basedir}/lib/littleproxy-1.1.1-SNAPSHOT-littleproxy-shade.jar</file>
-							<repositoryLayout>default</repositoryLayout>
-							<groupId>org.littleshoot</groupId>
-							<artifactId>littleproxy</artifactId>
-							<version>1.1.1-SNAPSHOT</version>
-							<packaging>jar</packaging>
-							<generatePom>true</generatePom>
-						</configuration>
-						<goals>
-							<goal>install-file</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
 
@@ -79,14 +56,33 @@
 			<version>3.8.1</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<!-- Proxy -->
 		<dependency>
 			<groupId>org.littleshoot</groupId>
 			<artifactId>littleproxy</artifactId>
-			<version>1.1.1-SNAPSHOT</version>
+			<version>1.1.2</version>
 		</dependency>
 		
+		<!-- File O/I -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>net.lightbody.bmp</groupId>
+			<artifactId>mitm</artifactId>
+			<version>2.1.4</version>
+		</dependency>
+
+		<!-- new dependency on the MITM module -->
+		<dependency>
+			<groupId>net.lightbody.bmp</groupId>
+			<artifactId>mitm</artifactId>
+			<version>2.1.4</version>
+		</dependency>
 		<!-- XML/JSON -->
 		<dependency>
 			<groupId>org.json</groupId>
@@ -110,7 +106,7 @@
 			<artifactId>log4j-core</artifactId>
 			<version>2.6.2</version>
 		</dependency>
-		
+
 		<!-- Servers -->
 		<dependency>
 			<groupId>javax.websocket</groupId>
@@ -127,6 +123,6 @@
 			<artifactId>jersey-container-servlet-core</artifactId>
 			<version>2.1</version>
 		</dependency>
-		
+
 	</dependencies>
 </project>

@@ -6,6 +6,8 @@ import org.json.JSONObject;
 import org.littleshoot.proxy.HttpProxyServer;
 import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 
+import net.lightbody.bmp.mitm.manager.ImpersonatingMitmManager;
+
 /**
  * This class's responsibility is to act as the proxy. 
  * 
@@ -40,12 +42,19 @@ public class Proxy {
 	
 		try {
 			//.withManInTheMiddle(new CertificateSniffingMitmManager())
+			
+			ImpersonatingMitmManager mitmManager = ImpersonatingMitmManager.builder()
+		            .build();			
+			
 			server = DefaultHttpProxyServer.bootstrap()
 					.withPort(port)
+					.withAllowRequestToOriginServer(true)
+					.withManInTheMiddle(mitmManager)
 					.withFiltersSource(filter)
+					.withAuthenticateSslClients(false)
 					.withAllowLocalOnly(false)
-					
 					.start();
+			
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to start proxy " + name + ":" + port, e);
 		}
