@@ -42,8 +42,9 @@ public class Proxy {
 	
 		try {
 			//.withManInTheMiddle(new CertificateSniffingMitmManager())
-			
+			//https://groups.google.com/forum/#!topic/littleproxy/NMKS4oyce3w
 			ImpersonatingMitmManager mitmManager = ImpersonatingMitmManager.builder()
+					.trustAllServers(true)
 		            .build();			
 			
 			server = DefaultHttpProxyServer.bootstrap()
@@ -51,7 +52,6 @@ public class Proxy {
 					.withAllowRequestToOriginServer(true)
 					.withManInTheMiddle(mitmManager)
 					.withFiltersSource(filter)
-					.withAuthenticateSslClients(false)
 					.withAllowLocalOnly(false)
 					.start();
 			
